@@ -1,4 +1,4 @@
-package com.vendo.auto_search_service;
+package com.vendo.auto_search_service.infrastructure.config;
 
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Configuration;
