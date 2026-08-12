@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-26 AS build
+FROM maven:3-eclipse-temurin-25 AS build
 
 WORKDIR /build
 
@@ -12,7 +12,7 @@ RUN mvn clean package -DskipTests
 
 RUN ls -lh target
 
-FROM eclipse-temurin:26
+FROM eclipse-temurin:25
 WORKDIR /app
 
 COPY --from=build /build/target/auto-search-service*.jar auto-search-service.jar
