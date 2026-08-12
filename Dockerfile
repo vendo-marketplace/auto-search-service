@@ -17,6 +17,6 @@ WORKDIR /app
 
 COPY --from=build /build/target/auto-search-service*.jar auto-search-service.jar
 
-EXPOSE 8100
+EXPOSE 9020
 
 CMD ["java", "-jar", "auto-search-service.jar"]
