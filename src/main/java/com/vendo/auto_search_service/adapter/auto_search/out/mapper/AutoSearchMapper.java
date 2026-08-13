@@ -1,6 +1,6 @@
-package com.vendo.auto_search_service.adapter.auto_search.mapper;
+package com.vendo.auto_search_service.adapter.auto_search.out.mapper;
 
-import com.vendo.auto_search_service.adapter.auto_search.persistence.MongoAutoSearch;
+import com.vendo.auto_search_service.adapter.auto_search.out.persistence.MongoAutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.infrastructure.config.MapStructConfig;
 import org.mapstruct.BeanMapping;
