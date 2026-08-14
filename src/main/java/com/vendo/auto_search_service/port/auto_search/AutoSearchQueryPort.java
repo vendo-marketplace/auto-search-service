@@ -9,6 +9,8 @@ public interface AutoSearchQueryPort {
 
     List<AutoSearch> findByUserId(String userId);
 
+    AutoSearch findById(String id);
+
     AutoSearchDataCommand findActiveRequests(int page, int size);
 
 }

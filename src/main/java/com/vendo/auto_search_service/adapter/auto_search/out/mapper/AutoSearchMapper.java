@@ -18,6 +18,8 @@ public interface AutoSearchMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(@MappingTarget MongoAutoSearch entity, AutoSearch autoSearch);
 
+    AutoSearch toAutoSearch(MongoAutoSearch entity);
+
     List<AutoSearch> toAutoSearches(List<MongoAutoSearch> entities);
 
 }

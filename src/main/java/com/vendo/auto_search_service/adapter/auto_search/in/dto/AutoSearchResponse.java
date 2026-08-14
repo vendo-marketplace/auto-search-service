@@ -1,28 +1,19 @@
-package com.vendo.auto_search_service.domain.auto_search;
+package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 
-import lombok.Builder;
+import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Set;
 
-@Builder
-public record AutoSearch(
+public record AutoSearchResponse(
         String id,
-
-        String userId,
-
         String categoryId,
         BigDecimal minPrice,
         BigDecimal maxPrice,
         String address,
-
         SearchStatus status,
-
         LocalDateTime expirationDate,
-        Set<String> notifiedProducts,
-
         Instant createdAt,
         Instant updatedAt
 ) {
