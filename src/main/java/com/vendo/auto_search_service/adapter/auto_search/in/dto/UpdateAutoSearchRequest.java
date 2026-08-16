@@ -17,7 +17,7 @@ public record UpdateAutoSearchRequest(
 
         String categoryId,
 
-        @DecimalMin(value = "0", message = "Min price must not be less than 0.")
+        @DecimalMin(value = "0", message = "Mininal price must not be less than 0.")
         BigDecimal minPrice,
 
         @DecimalMin(value = "0", message = "Maximum price must not be less than 0.")
