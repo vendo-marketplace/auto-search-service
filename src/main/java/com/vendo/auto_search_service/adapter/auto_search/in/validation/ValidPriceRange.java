@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPriceRange {
 
-    String message() default "minPrice must not be greater than maxPrice.";
+    String message() default "Minimal price must not be greater than maximum price.";
 
     Class<?>[] groups() default {};
 
