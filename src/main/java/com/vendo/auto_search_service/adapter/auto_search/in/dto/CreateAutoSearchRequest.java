@@ -21,7 +21,7 @@ public record CreateAutoSearchRequest(
         @DecimalMin(value = "0", message = "Minimal price must not be less than 0.")
         BigDecimal minPrice,
 
-        @DecimalMin(value = "0", message = "Max price must not be less than 0.")
+        @DecimalMin(value = "0", message = "Maximum price must not be less than 0.")
         BigDecimal maxPrice,
 
         String address,
