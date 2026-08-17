@@ -5,3 +5,8 @@ spring:
     active: ${APP_PROFILE}
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}"
+
+auto-search:
+  expiration:
+    min-days: 1
+    max-days: 7

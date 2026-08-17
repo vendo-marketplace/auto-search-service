@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Builder
+@Builder(toBuilder = true)
 public record AutoSearch(
         String id,
 

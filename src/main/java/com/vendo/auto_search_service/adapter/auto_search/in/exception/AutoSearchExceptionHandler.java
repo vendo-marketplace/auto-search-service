@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.exception;
 
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
-import com.vendo.auto_search_service.domain.auto_search.exception.CategoryNotFoundException;
+import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -23,14 +23,14 @@ class AutoSearchExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 
-    @ExceptionHandler(CategoryNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleCategoryNotFoundException(CategoryNotFoundException e, HttpServletRequest request) {
+    @ExceptionHandler(InvalidExpirationDateException.class)
+    ResponseEntity<ExceptionResponse> handleInvalidExpirationDateException(InvalidExpirationDateException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
-                .code(HttpStatus.NOT_FOUND.value())
+                .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 }

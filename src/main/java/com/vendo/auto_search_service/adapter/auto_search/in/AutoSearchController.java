@@ -38,11 +38,6 @@ public class AutoSearchController {
         return mapper.toResponses(autoSearchQueryUseCase.getUserRequests());
     }
 
-    @GetMapping("/{id}")
-    public AutoSearchResponse getById(@PathVariable String id) {
-        return mapper.toResponse(autoSearchQueryUseCase.getById(id));
-    }
-
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         autoSearchCommandUseCase.delete(id);

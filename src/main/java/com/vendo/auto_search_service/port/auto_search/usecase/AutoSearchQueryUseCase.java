@@ -8,6 +8,4 @@ public interface AutoSearchQueryUseCase {
 
     List<AutoSearch> getUserRequests();
 
-    AutoSearch getById(String id);
-
 }

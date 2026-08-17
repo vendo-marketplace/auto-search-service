@@ -5,10 +5,11 @@ import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearch
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequestDataBuilder;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.UpdateAutoSearchRequest;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.UpdateAutoSearchRequestDataBuilder;
+import com.vendo.auto_search_service.adapter.auto_search.in.validation.PriceRange;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
-import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
+import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.auto_search_service.domain.user.User;
 import com.vendo.auto_search_service.domain.user.UserDataBuilder;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchCommandUseCase;
@@ -31,7 +32,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.vendo.auto_search_service.test_utils.SecurityContextService.initializeSecurityContext;
@@ -106,7 +106,10 @@ class AutoSearchControllerIntegrationTest {
         @Test
         void create_shouldReturnBadRequest_whenMinPriceNegative() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .minPrice(BigDecimal.valueOf(-1))
+                    .priceRange(PriceRange.builder()
+                            .minPrice(BigDecimal.valueOf(-1))
+                            .maxPrice(BigDecimal.valueOf(100))
+                            .build())
                     .build();
 
             String content = mockMvc.perform(post("/auto-search")
@@ -117,15 +120,17 @@ class AutoSearchControllerIntegrationTest {
                     .andReturn().getResponse().getContentAsString();
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getErrors()).containsKey("minPrice");
+            assertThat(exceptionResponse.getErrors()).containsKey("priceRange.minPrice");
             verifyNoInteractions(autoSearchCommandUseCase);
         }
 
         @Test
         void create_shouldReturnBadRequest_whenMinPriceGreaterThanMaxPrice() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .minPrice(BigDecimal.valueOf(100))
-                    .maxPrice(BigDecimal.TEN)
+                    .priceRange(PriceRange.builder()
+                            .minPrice(BigDecimal.valueOf(100))
+                            .maxPrice(BigDecimal.TEN)
+                            .build())
                     .build();
 
             mockMvc.perform(post("/auto-search")
@@ -138,10 +143,12 @@ class AutoSearchControllerIntegrationTest {
         }
 
         @Test
-        void create_shouldReturnBadRequest_whenExpirationDateIsTooSoon() throws Exception {
-            CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .expirationDate(LocalDateTime.now())
-                    .build();
+        void create_shouldReturnBadRequest_whenExpirationDateIsInvalid() throws Exception {
+            CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields().build();
+
+            doThrow(new InvalidExpirationDateException(
+                    "Expiration date must be at least a day after today and not later than a week from now."))
+                    .when(autoSearchCommandUseCase).create(any(AutoSearch.class));
 
             String content = mockMvc.perform(post("/auto-search")
                             .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
@@ -151,26 +158,8 @@ class AutoSearchControllerIntegrationTest {
                     .andReturn().getResponse().getContentAsString();
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getErrors()).containsKey("expirationDate");
-            verifyNoInteractions(autoSearchCommandUseCase);
-        }
-
-        @Test
-        void create_shouldReturnBadRequest_whenExpirationDateIsTooFar() throws Exception {
-            CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .expirationDate(LocalDateTime.now().plusDays(30))
-                    .build();
-
-            String content = mockMvc.perform(post("/auto-search")
-                            .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest())
-                    .andReturn().getResponse().getContentAsString();
-
-            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getErrors()).containsKey("expirationDate");
-            verifyNoInteractions(autoSearchCommandUseCase);
+            assertThat(exceptionResponse.getMessage())
+                    .isEqualTo("Expiration date must be at least a day after today and not later than a week from now.");
         }
     }
 
@@ -192,21 +181,18 @@ class AutoSearchControllerIntegrationTest {
         }
 
         @Test
-        void update_shouldReturnBadRequest_whenStatusIsExpired() throws Exception {
+        void update_shouldReturnBadRequest_whenStatusIsInvalidEnumValue() throws Exception {
             String id = "auto-search-id";
-            UpdateAutoSearchRequest request = UpdateAutoSearchRequestDataBuilder.withAllFields()
-                    .status(SearchStatus.EXPIRED)
-                    .build();
+            String invalidStatusRequest = """
+                    {"status": "EXPIRED"}
+                    """;
 
-            String content = mockMvc.perform(put("/auto-search/{id}", id)
+            mockMvc.perform(put("/auto-search/{id}", id)
                             .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest())
-                    .andReturn().getResponse().getContentAsString();
+                            .content(invalidStatusRequest))
+                    .andExpect(status().isBadRequest());
 
-            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getErrors()).containsKey("status");
             verifyNoInteractions(autoSearchCommandUseCase);
         }
 
@@ -245,31 +231,6 @@ class AutoSearchControllerIntegrationTest {
                     .andExpect(status().isOk());
 
             verify(autoSearchQueryUseCase).getUserRequests();
-        }
-
-        @Test
-        void getById_shouldReturnRequest() throws Exception {
-            AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
-
-            when(autoSearchQueryUseCase.getById(autoSearch.id())).thenReturn(autoSearch);
-
-            mockMvc.perform(get("/auto-search/{id}", autoSearch.id())
-                            .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext)))
-                    .andExpect(status().isOk());
-
-            verify(autoSearchQueryUseCase).getById(autoSearch.id());
-        }
-
-        @Test
-        void getById_shouldReturnNotFound_whenRequestDoesNotExistOrNotOwned() throws Exception {
-            String id = "auto-search-id";
-
-            when(autoSearchQueryUseCase.getById(id))
-                    .thenThrow(new AutoSearchNotFoundException("Auto search request not found."));
-
-            mockMvc.perform(get("/auto-search/{id}", id)
-                            .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext)))
-                    .andExpect(status().isNotFound());
         }
     }
 
