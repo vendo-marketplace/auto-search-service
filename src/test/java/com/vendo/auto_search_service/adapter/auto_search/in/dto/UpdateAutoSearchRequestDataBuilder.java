@@ -18,4 +18,5 @@ public class UpdateAutoSearchRequestDataBuilder {
                 .status(UpdateSearchStatus.ACTIVE)
                 .expirationDate(LocalDateTime.now().plusDays(3));
     }
+
 }
