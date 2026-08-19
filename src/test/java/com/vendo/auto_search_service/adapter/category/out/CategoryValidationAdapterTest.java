@@ -8,7 +8,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class CategoryValidationAdapterTest {
 
-    private final CategoryValidationAdapter adapter = new CategoryValidationAdapter();
+    private final CategoryQueryAdapter adapter = new CategoryQueryAdapter();
 
     @Test
     void validateCategoryExists_shouldPass_whenCategoryIdNotBlank() {

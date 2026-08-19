@@ -32,4 +32,5 @@ public record User(
                 .map(Enum::name)
                 .collect(Collectors.toSet());
     }
+
 }

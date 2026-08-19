@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-class CategoryExceptionHandler {
+public class CategoryExceptionHandler {
 
     @ExceptionHandler(CategoryNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleCategoryNotFoundException(CategoryNotFoundException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleCategoryNotFoundException(CategoryNotFoundException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())

@@ -8,7 +8,7 @@ public class PriceRangeValidator implements ConstraintValidator<ValidPriceRange,
 
     @Override
     public boolean isValid(PriceRange value, ConstraintValidatorContext context) {
-        if (value == null || !ObjectUtils.isAllNotNull(value.minPrice(), value.maxPrice())) {
+        if (ObjectUtils.isNull(value) || !ObjectUtils.isAllNotNull(value.minPrice(), value.maxPrice())) {
             return true;
         }
 

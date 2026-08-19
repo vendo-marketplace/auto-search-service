@@ -12,7 +12,7 @@ import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
-import com.vendo.auto_search_service.port.category.CategoryValidationPort;
+import com.vendo.auto_search_service.port.category.CategoryQueryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ class AutoSearchCommandServiceTest {
     @Mock
     private AutoSearchQueryPort queryPort;
     @Mock
-    private CategoryValidationPort categoryValidationPort;
+    private CategoryQueryPort categoryQueryPort;
     @Mock
     private AuthUserPort authUserPort;
     @Mock
@@ -67,7 +67,7 @@ class AutoSearchCommandServiceTest {
 
         commandService.create(request);
 
-        verify(categoryValidationPort).validateCategoryExists(request.categoryId());
+        verify(categoryQueryPort).validateCategoryExists(request.categoryId());
 
         ArgumentCaptor<AutoSearch> captor = ArgumentCaptor.forClass(AutoSearch.class);
         verify(commandPort).save(captor.capture());
@@ -119,7 +119,7 @@ class AutoSearchCommandServiceTest {
         AutoSearch request = AutoSearchDataBuilder.withAllFields().build();
 
         doThrow(new CategoryNotFoundException("Category not found."))
-                .when(categoryValidationPort).validateCategoryExists(request.categoryId());
+                .when(categoryQueryPort).validateCategoryExists(request.categoryId());
 
         assertThatThrownBy(() -> commandService.create(request))
                 .isInstanceOf(CategoryNotFoundException.class);
@@ -136,7 +136,7 @@ class AutoSearchCommandServiceTest {
 
         commandService.update(existing.id(), update);
 
-        verify(categoryValidationPort).validateCategoryExists(update.categoryId());
+        verify(categoryQueryPort).validateCategoryExists(update.categoryId());
         verify(commandPort).update(existing.id(), update);
     }
 
@@ -149,7 +149,7 @@ class AutoSearchCommandServiceTest {
 
         commandService.update(existing.id(), update);
 
-        verify(categoryValidationPort, never()).validateCategoryExists(anyString());
+        verify(categoryQueryPort, never()).validateCategoryExists(anyString());
         verify(commandPort).update(existing.id(), update);
     }
 
@@ -187,7 +187,7 @@ class AutoSearchCommandServiceTest {
 
         when(queryPort.findById(existing.id())).thenReturn(existing);
         doThrow(new CategoryNotFoundException("Category not found."))
-                .when(categoryValidationPort).validateCategoryExists(update.categoryId());
+                .when(categoryQueryPort).validateCategoryExists(update.categoryId());
 
         assertThatThrownBy(() -> commandService.update(existing.id(), update))
                 .isInstanceOf(CategoryNotFoundException.class);
