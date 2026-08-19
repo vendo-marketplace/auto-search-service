@@ -2,6 +2,8 @@ package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
+import com.vendo.auto_search_service.domain.category.Category;
+import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
@@ -28,8 +30,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     @Override
     public void create(AutoSearch autoSearch) {
-        Object category = categoryQueryPort.findById(autoSearch.categoryId());
-        // TODO category.throwIfNotDesiredType(CategoryType.CHILD);
+        Category category = categoryQueryPort.findById(autoSearch.categoryId());
+        category.throwIfNotDesiredType(CategoryType.CHILD);
 
         AutoSearch toSave = autoSearch.toBuilder()
                 .userId(authUserPort.getAuthUser().id())
@@ -61,7 +63,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     private void validateIfChanged(String categoryId) {
         if (!StringUtils.isEmpty(categoryId)) {
-            categoryQueryPort.findById(categoryId);
+            Category category = categoryQueryPort.findById(categoryId);
+            category.throwIfNotDesiredType(CategoryType.CHILD);
         }
     }
 

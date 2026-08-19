@@ -1,6 +1,7 @@
 package com.vendo.auto_search_service.adapter.category.in.exception;
 
 import com.vendo.auto_search_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.auto_search_service.domain.category.exception.CategoryTypeException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,5 +21,16 @@ public class CategoryExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(CategoryTypeException.class)
+    public ResponseEntity<ExceptionResponse> handleCategoryTypeException(CategoryTypeException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 }

@@ -19,12 +19,12 @@ public class InternalTokenGenerationAdapter implements InternalTokenGenerationPo
     private final JwtProperties props;
 
     @Override
-    public String generate() {
+    public String generate(ServiceName audience) {
         JwtProperties.Internal internal = props.getInternal();
 
         JwtPayload jwtPayload = JwtPayload.builder()
                 .subject(ServiceName.AUTO_SEARCH_SERVICE.getServiceName())
-//                .audience(Set.of(ServiceName..getServiceName()))
+                .audience(Set.of(audience.getServiceName()))
                 .claims(Map.of(TokenClaim.ROLES.getClaim(), ServiceRole.INTERNAL.name()))
                 .expiration(internal.expirationTime())
                 .build();
