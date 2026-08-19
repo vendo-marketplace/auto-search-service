@@ -6,5 +6,5 @@ public interface AuthUserPort {
 
     User getAuthUser();
 
-    void validateAuthUser(String otherUserId);
+    void validateAuthOwner(String otherUserId);
 }

@@ -44,7 +44,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
     @Override
     public void update(String id, AutoSearch autoSearch) {
         AutoSearch existing = queryPort.findById(id);
-        authUserPort.validateAuthUser(existing.userId());
+        authUserPort.validateAuthOwner(existing.userId());
 
         validateIfChanged(autoSearch.categoryId());
         validateIfChanged(autoSearch.expirationDate());
@@ -55,7 +55,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
     @Override
     public void delete(String id) {
         AutoSearch existing = queryPort.findById(id);
-        authUserPort.validateAuthUser(existing.userId());
+        authUserPort.validateAuthOwner(existing.userId());
         commandPort.delete(id);
     }
 

@@ -15,7 +15,7 @@ public class AuthUserAdapter implements AuthUserPort {
     }
 
     @Override
-    public void validateAuthUser(String otherUserId) {
+    public void validateAuthOwner(String otherUserId) {
         User authUser = getAuthUser();
         if (!authUser.id().equals(otherUserId)) {
             throw new UserNotOwnerException("You're not owner.");
