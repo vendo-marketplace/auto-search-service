@@ -1,7 +1,6 @@
 package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
-import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
 import com.vendo.auto_search_service.domain.category.Category;
 import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
@@ -16,16 +15,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
+    private final AuthUserPort authUserPort;
+
     private final AutoSearchCommandPort commandPort;
     private final AutoSearchQueryPort queryPort;
+
     private final CategoryQueryPort categoryQueryPort;
-    private final AuthUserPort authUserPort;
+
     private final ExpirationDateProps expirationProps;
 
     @Override
@@ -33,14 +34,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         Category category = categoryQueryPort.findById(autoSearch.categoryId());
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
-        AutoSearch toSave = autoSearch.toBuilder()
-                .userId(authUserPort.getAuthUser().id())
-                .status(SearchStatus.ACTIVE)
-                .expirationDate(resolveExpiration(autoSearch.expirationDate()))
-                .notifiedProducts(Set.of())
-                .build();
-
-        commandPort.save(toSave);
+        AutoSearch fromNew = autoSearch.fromNew(authUserPort.getAuthUser().id(), resolveExpiration(autoSearch.expirationDate()));
+        commandPort.save(fromNew);
     }
 
     @Override

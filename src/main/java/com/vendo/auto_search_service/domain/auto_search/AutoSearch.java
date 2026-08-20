@@ -30,14 +30,22 @@ public record AutoSearch(
 ) {
 
     public static void validateExpirationDate(LocalDateTime expirationDate, int minDays, int maxDays) {
-        LocalDate today = LocalDate.now(), date = expirationDate.toLocalDate();
+        LocalDate today = LocalDate.now(), expirationLocalDate = expirationDate.toLocalDate();
         LocalDate earliest = today.plusDays(minDays), latest = today.plusDays(maxDays);
 
-        if (date.isBefore(earliest) || date.isAfter(latest)) {
+        if (expirationLocalDate.isBefore(earliest) || expirationLocalDate.isAfter(latest)) {
             throw new InvalidExpirationDateException(
                     "Expiration date must be at least a day after today and not later than a week from now."
             );
         }
     }
 
+    public AutoSearch fromNew(String userId, LocalDateTime expirationDate) {
+        return this.toBuilder()
+                .userId(userId)
+                .status(SearchStatus.ACTIVE)
+                .expirationDate(expirationDate)
+                .notifiedProducts(Set.of())
+                .build();
+    }
 }
