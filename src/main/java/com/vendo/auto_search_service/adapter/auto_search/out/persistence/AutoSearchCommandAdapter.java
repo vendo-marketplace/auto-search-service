@@ -1,6 +1,6 @@
-package com.vendo.auto_search_service.adapter.auto_search.persistence;
+package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
-import com.vendo.auto_search_service.adapter.auto_search.mapper.AutoSearchMapper;
+import com.vendo.auto_search_service.adapter.auto_search.out.mapper.AutoSearchMapper;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
