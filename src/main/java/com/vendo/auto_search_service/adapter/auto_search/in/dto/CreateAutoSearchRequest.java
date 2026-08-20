@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public record CreateAutoSearchRequest(
 
-        @NotBlank(message = "Category id is required.")
+        @NotBlank(message = "Category ID is required.")
         String categoryId,
 
         @Valid

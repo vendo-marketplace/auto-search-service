@@ -100,6 +100,7 @@ class AutoSearchQueryControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse.getErrors()).containsKey("categoryId");
+
             verifyNoInteractions(autoSearchCommandUseCase);
         }
 
@@ -121,6 +122,29 @@ class AutoSearchQueryControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse.getErrors()).containsKey("priceRange.minPrice");
+
+            verifyNoInteractions(autoSearchCommandUseCase);
+        }
+
+        @Test
+        void create_shouldReturnBadRequest_whenMaxPriceNegative() throws Exception {
+            CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
+                    .priceRange(PriceRange.builder()
+                            .minPrice(BigDecimal.valueOf(100))
+                            .maxPrice(BigDecimal.valueOf(-1))
+                            .build())
+                    .build();
+
+            String content = mockMvc.perform(post("/auto-search")
+                            .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getErrors()).containsKey("priceRange.maxPrice");
+
             verifyNoInteractions(autoSearchCommandUseCase);
         }
 
@@ -133,14 +157,20 @@ class AutoSearchQueryControllerIntegrationTest {
                             .build())
                     .build();
 
-            mockMvc.perform(post("/auto-search")
+            String content = mockMvc.perform(post("/auto-search")
                             .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getErrors()).containsKey("priceRange");
 
             verifyNoInteractions(autoSearchCommandUseCase);
         }
+
+        // TODO stopped here
 
         @Test
         void create_shouldReturnBadRequest_whenExpirationDateIsInvalid() throws Exception {
