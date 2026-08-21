@@ -16,6 +16,7 @@ import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.category.CategoryQueryPort;
+import com.vendo.core_lib.utils.AssertionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,12 +86,7 @@ class AutoSearchCommandServiceTest {
         assertThat(saved.id()).isNull();
         assertThat(saved.userId()).isEqualTo(authUser.id());
         assertThat(saved.status()).isEqualTo(SearchStatus.ACTIVE);
-        assertThat(saved.categoryId()).isEqualTo(request.categoryId());
-        assertThat(saved.minPrice()).isEqualTo(request.minPrice());
-        assertThat(saved.maxPrice()).isEqualTo(request.maxPrice());
-        assertThat(saved.address()).isEqualTo(request.address());
-        assertThat(saved.expirationDate()).isEqualTo(request.expirationDate());
-        assertThat(saved.notifiedProducts()).isEqualTo(Set.of());
+        AssertionUtils.assertFrom(saved, request, "id", "userId", "status");
     }
 
     @Test
