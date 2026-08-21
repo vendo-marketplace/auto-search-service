@@ -1,0 +1,27 @@
+spring:
+  cloud:
+    discovery:
+      enabled: false
+    service-registry:
+      auto-registration:
+        enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+security:
+  jwt:
+    secret:
+      key: 63c43ae4e049015bcf8d7e59bcce8692e15ed390b68d75f60f218a118dfeaf89a52936c89bedda73b8689c5495808b25
+      access-expiration-time: 60000
+      refresh-expiration-time: 120000
+    internal:
+      key: 63c43ae4e049015bcf8d7e59bcce8692e15ed390b68d75f60f218a118dfeaf89a52936c89bedda73b8689c5495808b25
+      expiration-time: 60000
+
+endpoints:
+  unauthenticated:
+    general:
+      - /actuator/health
+    auto-search: []
