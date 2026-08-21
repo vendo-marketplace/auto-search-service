@@ -1,6 +1,5 @@
 package com.vendo.auto_search_service.adapter.auto_search.in;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequest;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequestDataBuilder;
@@ -126,7 +125,7 @@ public class AutoSearchCommandControllerIntegrationTest {
         }
 
         @Test
-        void create_shouldReturnBadRequest_whenMaxPriceNegative() throws Exception {
+        void create_shouldReturnBadRequest_whenMaxPriceNegative_andMinPriceLessThanMax() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
                     .priceRange(PriceRange.builder()
                             .minPrice(BigDecimal.valueOf(100))
@@ -142,8 +141,9 @@ public class AutoSearchCommandControllerIntegrationTest {
                     .andReturn().getResponse().getContentAsString();
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getErrors()).hasSize(1);
+            assertThat(exceptionResponse.getErrors()).hasSize(2);
             assertThat(exceptionResponse.getErrors()).containsKey("priceRange.maxPrice");
+            assertThat(exceptionResponse.getErrors()).containsKey("priceRange");
 
             verifyNoInteractions(autoSearchCommandUseCase);
         }
@@ -247,7 +247,7 @@ public class AutoSearchCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsKey("status");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/auto-search");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/auto-search/" + id);
 
             verifyNoInteractions(autoSearchCommandUseCase);
         }
