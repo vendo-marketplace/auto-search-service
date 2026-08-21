@@ -6,6 +6,7 @@ import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
+import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchCommandUseCase;
 import com.vendo.auto_search_service.port.category.CategoryQueryPort;
@@ -24,6 +25,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     private final AutoSearchCommandPort commandPort;
     private final AutoSearchQueryPort queryPort;
+    private final AutoSearchEventSenderPort autoSearchEventSenderPort;
 
     private final CategoryQueryPort categoryQueryPort;
 
@@ -35,7 +37,9 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         AutoSearch fromNew = autoSearch.fromNew(authUserPort.getAuthUser().id(), resolveExpiration(autoSearch.expirationDate()));
-        commandPort.save(fromNew);
+
+        String savedId = commandPort.save(fromNew);
+        autoSearchEventSenderPort.sendMatching(savedId);
     }
 
     @Override

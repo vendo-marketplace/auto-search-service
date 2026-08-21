@@ -4,7 +4,7 @@ import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 
 public interface AutoSearchCommandPort {
 
-    void save(AutoSearch autoSearch);
+    String save(AutoSearch autoSearch);
     void update(String id, AutoSearch autoSearch);
     void delete(String id);
 

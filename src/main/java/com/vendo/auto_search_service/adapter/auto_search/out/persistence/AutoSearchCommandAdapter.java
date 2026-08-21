@@ -15,8 +15,9 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
     private final MongoAutoSearchRepository repository;
 
     @Override
-    public void save(AutoSearch autoSearch) {
-        repository.save(mapper.toEntity(autoSearch));
+    public String save(AutoSearch autoSearch) {
+        MongoAutoSearch entity = repository.save(mapper.toEntity(autoSearch));
+        return entity.getId();
     }
 
     @Override
