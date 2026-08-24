@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.category.out.exception;
 
 import com.vendo.auto_search_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.core_lib.type.ServiceName;
+import com.vendo.core_lib.types.ServiceName;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;

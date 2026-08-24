@@ -1,8 +1,8 @@
 package com.vendo.auto_search_service.adapter.security.out.jwt;
 
 import com.vendo.auto_search_service.adapter.security.out.jwt.props.JwtProperties;
-import com.vendo.core_lib.type.ServiceName;
-import com.vendo.core_lib.type.ServiceRole;
+import com.vendo.core_lib.types.ServiceName;
+import com.vendo.core_lib.types.ServiceRole;
 import com.vendo.security_lib.type.TokenClaim;
 import com.vendo.security_starter.jwt.JwtPayload;
 import com.vendo.security_starter.jwt.JwtService;
