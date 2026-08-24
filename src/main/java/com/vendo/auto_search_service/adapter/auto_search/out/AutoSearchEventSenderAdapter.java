@@ -10,11 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
-    private final AutoSearchMatchingEventProducer matchingEventProducer;
+    private final AutoSearchMatchingEventProducer producer;
 
     @Override
-    public void sendMatching(String autoSearchId) {
-        AutoSearchMatchingEvent event = AutoSearchMatchingEvent.from(autoSearchId);
-        matchingEventProducer.send(event);
+    public void send(String autoSearchId) {
+        producer.send(AutoSearchMatchingEvent.from(autoSearchId));
     }
 }

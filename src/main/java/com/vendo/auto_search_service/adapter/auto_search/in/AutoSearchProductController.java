@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auto-search")
-public class AutoSearchMatchingController {
+public class AutoSearchProductController {
 
     @GetMapping("/{id}/products")
     public ResponseEntity<?> search(@PathVariable String id) {

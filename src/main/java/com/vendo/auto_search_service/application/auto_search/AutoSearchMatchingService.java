@@ -24,8 +24,9 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     public void match(String autoSearchId) {
         AutoSearch autoSearch = autoSearchQueryPort.findById(autoSearchId);
         SearchResponseCommand response = searchPort.search(buildSearchRequest(autoSearch));
-        autoSearchCommandPort.update(autoSearchId, AutoSearch.builder().products(ProductId.getProductIds(response.data())).build());
-        // TODO notify user about new list
+
+        AutoSearch update = AutoSearch.builder().products(ProductId.getProductIds(response.data())).build();
+        autoSearchCommandPort.update(autoSearchId, update);
     }
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {

@@ -30,18 +30,8 @@ public class ProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, String> stringProducerFactory() {
-        return buildProducerFactory(new StringSerializer());
-    }
-
-    @Bean
     public KafkaTemplate<String, ?> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
-    }
-
-    @Bean
-    public KafkaTemplate<String, String> stringKafkaTemplate() {
-        return new KafkaTemplate<>(stringProducerFactory());
     }
 
     private <T> ProducerFactory<String, T> buildProducerFactory(Serializer<T> serializer) {

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-class AutoSearchMatchingEventConsumer {
+public class AutoSearchMatchingEventConsumer {
 
     private final AutoSearchMatchingUseCase useCase;
 
@@ -20,7 +20,7 @@ class AutoSearchMatchingEventConsumer {
             properties = {"auto.offset.reset: ${kafka.events.auto-search.matching.properties.auto-offset-reset}"},
             containerFactory = "${kafka.events.auto-search.matching.container-factory}"
     )
-    void listenAutoSearchMatchingEvent(AutoSearchMatchingEvent event) {
+    public void listenAutoSearchMatchingEvent(AutoSearchMatchingEvent event) {
         log.info("Received event for auto search matching: {}.", event);
         useCase.match(event.autoSearchId());
     }

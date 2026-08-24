@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 public class AutoSearchMatchingEventProducer {
 
     @Value("${kafka.events.auto-search.matching.topic}")
-    private String autoSearchMatchingEventTopic;
+    private String topic;
 
     private final KafkaTemplate<String, AutoSearchMatchingEvent> kafkaTemplate;
 
     public void send(AutoSearchMatchingEvent event) {
-        kafkaTemplate.send(autoSearchMatchingEventTopic, event);
-        log.info("Sent event for product updated: {}.", event);
+        kafkaTemplate.send(topic, event);
+        log.info("Sent event for auto search matching: {}.", event);
     }
 
 }
