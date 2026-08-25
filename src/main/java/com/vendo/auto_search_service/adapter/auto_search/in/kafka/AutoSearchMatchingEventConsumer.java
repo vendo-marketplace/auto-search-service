@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.kafka;
 
-import com.vendo.auto_search_service.AutoSearchMatchingEvent;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchMatchingUseCase;
+import com.vendo.event_lib.auto_search.AutoSearchMatchingEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -22,6 +22,6 @@ public class AutoSearchMatchingEventConsumer {
     )
     public void listenAutoSearchMatchingEvent(AutoSearchMatchingEvent event) {
         log.info("Received event for auto search matching: {}.", event);
-        useCase.match(event.autoSearchId());
+        useCase.match(event.id());
     }
 }

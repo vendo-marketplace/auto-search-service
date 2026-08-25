@@ -39,7 +39,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         AutoSearch fromNew = autoSearch.fromNew(authUserPort.getAuthUser().id(), resolveExpiration(autoSearch.expirationDate()));
 
         String savedId = commandPort.save(fromNew);
-        autoSearchEventSenderPort.send(savedId);
+        autoSearchEventSenderPort.sendMatching(savedId);
     }
 
     @Override
