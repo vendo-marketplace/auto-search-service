@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -34,8 +35,9 @@ class AutoSearchQueryAdapter implements AutoSearchQueryPort {
     }
 
     @Override
-    public AutoSearchDataCommand findActiveRequests(int page, int size) {
-        Page<MongoAutoSearch> paged = repository.findAllByStatus(SearchStatus.ACTIVE, PageRequest.of(page, size));
+    public AutoSearchDataCommand findOutdatedActiveRequests(LocalDateTime referenceTime, int page, int size) {
+        Page<MongoAutoSearch> paged = repository.findAllByStatusAndExpirationDateBefore(
+                SearchStatus.ACTIVE, referenceTime, PageRequest.of(page, size));
         return new AutoSearchDataCommand(mapper.toAutoSearches(paged.toList()), paged.hasNext());
     }
 }

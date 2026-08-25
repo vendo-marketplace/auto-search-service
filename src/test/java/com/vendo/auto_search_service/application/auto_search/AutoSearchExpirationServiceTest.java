@@ -21,7 +21,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -47,13 +46,13 @@ class AutoSearchExpirationServiceTest {
     }
 
     @Test
-    void expireOutdatedRequests_shouldUpdateStatusToExpired_whenExpirationDateIsInThePast() {
+    void expireOutdatedRequests_shouldUpdateStatusToExpired_whenOutdatedRequestExists() {
         AutoSearch outdated = AutoSearchDataBuilder.withAllFields()
                 .id("outdated-id")
                 .expirationDate(LocalDateTime.now().minusDays(1))
                 .build();
 
-        when(queryPort.findActiveRequests(0, 10))
+        when(queryPort.findOutdatedActiveRequests(any(), eq(0), eq(10)))
                 .thenReturn(new AutoSearchDataCommand(List.of(outdated), false));
 
         expirationService.expireOutdatedRequests();
@@ -61,20 +60,6 @@ class AutoSearchExpirationServiceTest {
         ArgumentCaptor<AutoSearch> captor = ArgumentCaptor.forClass(AutoSearch.class);
         verify(commandPort).update(eq("outdated-id"), captor.capture());
         assertThat(captor.getValue().status()).isEqualTo(SearchStatus.EXPIRED);
-    }
-
-    @Test
-    void expireOutdatedRequests_shouldSkipRequest_whenNotYetExpired() {
-        AutoSearch stillActive = AutoSearchDataBuilder.withAllFields()
-                .expirationDate(LocalDateTime.now().plusDays(1))
-                .build();
-
-        when(queryPort.findActiveRequests(0, 10))
-                .thenReturn(new AutoSearchDataCommand(List.of(stillActive), false));
-
-        expirationService.expireOutdatedRequests();
-
-        verify(commandPort, never()).update(anyString(), any());
     }
 
     @Test
@@ -88,21 +73,21 @@ class AutoSearchExpirationServiceTest {
                 .expirationDate(LocalDateTime.now().minusHours(1))
                 .build();
 
-        when(queryPort.findActiveRequests(0, 10))
+        when(queryPort.findOutdatedActiveRequests(any(), eq(0), eq(10)))
                 .thenReturn(new AutoSearchDataCommand(List.of(outdatedOnFirstPage), true));
-        when(queryPort.findActiveRequests(1, 10))
+        when(queryPort.findOutdatedActiveRequests(any(), eq(1), eq(10)))
                 .thenReturn(new AutoSearchDataCommand(List.of(outdatedOnSecondPage), false));
 
         expirationService.expireOutdatedRequests();
 
         verify(commandPort).update(eq("first-page-id"), any());
         verify(commandPort).update(eq("second-page-id"), any());
-        verify(queryPort, never()).findActiveRequests(eq(2), anyInt());
+        verify(queryPort, never()).findOutdatedActiveRequests(any(), eq(2), anyInt());
     }
 
     @Test
-    void expireOutdatedRequests_shouldDoNothing_whenNoActiveRequests() {
-        when(queryPort.findActiveRequests(0, 10))
+    void expireOutdatedRequests_shouldDoNothing_whenNoOutdatedRequests() {
+        when(queryPort.findOutdatedActiveRequests(any(), eq(0), eq(10)))
                 .thenReturn(new AutoSearchDataCommand(List.of(), false));
 
         expirationService.expireOutdatedRequests();

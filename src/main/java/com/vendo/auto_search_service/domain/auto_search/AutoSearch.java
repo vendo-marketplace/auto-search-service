@@ -49,10 +49,6 @@ public record AutoSearch(
                 .build();
     }
 
-    public boolean isOutdated(LocalDateTime referenceTime) {
-        return expirationDate.isBefore(referenceTime);
-    }
-
     public AutoSearch expire() {
         return this.toBuilder()
                 .status(SearchStatus.EXPIRED)

@@ -26,27 +26,29 @@ class AutoSearchExpirationService implements AutoSearchExpirationUseCase {
 
     @Override
     public void expireOutdatedRequests() {
-        List<AutoSearch> outdated = collectOutdatedRequests();
-        outdated.forEach(autoSearch -> commandPort.update(autoSearch.id(), autoSearch.expire()));
+        List<AutoSearch> outdatedRequests = fetchAllOutdatedRequests();
+        outdatedRequests.forEach(this::expire);
 
-        if (!outdated.isEmpty()) {
-            log.info("Expired {} outdated auto search request(s).", outdated.size());
+        if (!outdatedRequests.isEmpty()) {
+            log.info("Expired {} outdated auto search request(s).", outdatedRequests.size());
         }
     }
 
-    private List<AutoSearch> collectOutdatedRequests() {
+    private List<AutoSearch> fetchAllOutdatedRequests() {
         LocalDateTime now = LocalDateTime.now();
-        List<AutoSearch> outdated = new ArrayList<>();
+        List<AutoSearch> outdatedRequests = new ArrayList<>();
 
-        int page = 0;
-        AutoSearchDataCommand result;
+        int pageNumber = 0;
+        AutoSearchDataCommand page;
         do {
-            result = queryPort.findActiveRequests(page++, schedulerProps.getPageSize());
-            result.data().stream()
-                    .filter(autoSearch -> autoSearch.isOutdated(now))
-                    .forEach(outdated::add);
-        } while (result.hasNext());
+            page = queryPort.findOutdatedActiveRequests(now, pageNumber++, schedulerProps.getPageSize());
+            outdatedRequests.addAll(page.data());
+        } while (page.hasNext());
 
-        return outdated;
+        return outdatedRequests;
+    }
+
+    private void expire(AutoSearch autoSearch) {
+        commandPort.update(autoSearch.id(), autoSearch.expire());
     }
 }
