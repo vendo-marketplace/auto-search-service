@@ -1,11 +1,12 @@
 package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
 import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.ListPagingAndSortingRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,5 +14,7 @@ public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoS
 
     List<MongoAutoSearch> findAllByUserId(String userId);
 
-    Page<MongoAutoSearch> findAllByStatusAndExpirationDateBefore(SearchStatus status, LocalDateTime expirationDate, Pageable pageable);
+    @Query("{ 'status': ?0, 'expirationDate': { '$lt': ?1 } }")
+    @Update("{ '$set': { 'status': ?2, 'updatedAt': ?3 } }")
+    long updateStatusForOutdatedRequests(SearchStatus currentStatus, LocalDateTime expirationDateBefore, SearchStatus newStatus, Instant updatedAt);
 }

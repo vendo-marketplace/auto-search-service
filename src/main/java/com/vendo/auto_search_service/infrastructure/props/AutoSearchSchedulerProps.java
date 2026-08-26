@@ -12,6 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class AutoSearchSchedulerProps {
 
     private String cron;
-    private int pageSize;
 
 }

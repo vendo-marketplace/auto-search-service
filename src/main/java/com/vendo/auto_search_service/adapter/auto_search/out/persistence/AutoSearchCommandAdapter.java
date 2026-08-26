@@ -2,10 +2,14 @@ package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
 import com.vendo.auto_search_service.adapter.auto_search.out.mapper.AutoSearchMapper;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
+import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +34,11 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
     public void delete(String id) {
         MongoAutoSearch entity = findOrThrow(id);
         repository.delete(entity);
+    }
+
+    @Override
+    public long expireOutdatedRequests(LocalDateTime referenceTime) {
+        return repository.updateStatusForOutdatedRequests(SearchStatus.ACTIVE, referenceTime, SearchStatus.EXPIRED, Instant.now());
     }
 
     private MongoAutoSearch findOrThrow(String id) {

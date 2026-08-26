@@ -48,10 +48,4 @@ public record AutoSearch(
                 .notifiedProducts(Set.of())
                 .build();
     }
-
-    public AutoSearch expire() {
-        return this.toBuilder()
-                .status(SearchStatus.EXPIRED)
-                .build();
-    }
 }

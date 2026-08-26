@@ -12,4 +12,3 @@ auto-search:
     max-days: 7
     scheduler:
       cron: "0 0 * * * *"
-      page-size: 100
