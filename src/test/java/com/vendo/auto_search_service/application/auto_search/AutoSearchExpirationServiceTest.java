@@ -37,7 +37,7 @@ class AutoSearchExpirationServiceTest {
     }
 
     @Test
-    void expireOutdatedRequests_shouldNotThrow_whenNoRequestsWereExpired() {
+    void expireOutdatedRequests_shouldDoNothing_whenNoRequestsWereExpired() {
         when(commandPort.expireOutdatedRequests(any())).thenReturn(0L);
 
         expirationService.expireOutdatedRequests();
