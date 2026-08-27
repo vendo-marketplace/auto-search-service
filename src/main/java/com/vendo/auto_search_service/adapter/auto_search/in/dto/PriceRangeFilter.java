@@ -3,9 +3,11 @@ package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 import com.vendo.core_lib.annotations.price.ValidPriceRange;
 import com.vendo.core_lib.dto.request.PriceRange;
 import jakarta.validation.constraints.DecimalMin;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 
+@Builder
 @ValidPriceRange
 public record PriceRangeFilter(
         @DecimalMin(value = "0", message = "Minimal price must not be less than 0.")

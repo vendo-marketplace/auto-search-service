@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class ProductFeignConfig {
 
     @Bean
-    public ErrorDecoder errorDecoder() {
+    public ErrorDecoder productErrorDecoder() {
         return new ProductServiceErrorDecoder();
     }
 

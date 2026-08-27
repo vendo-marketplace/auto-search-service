@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SearchFeignConfig {
 
     @Bean
-    public ErrorDecoder errorDecoder() {
+    public ErrorDecoder searchErrorDecoder() {
         return new SearchServiceErrorDecoder();
     }
 
