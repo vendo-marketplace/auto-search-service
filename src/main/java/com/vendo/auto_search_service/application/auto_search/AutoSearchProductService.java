@@ -1,5 +1,7 @@
 package com.vendo.auto_search_service.application.auto_search;
 
+import com.vendo.auto_search_service.application.search.command.SearchRequestCommand;
+import com.vendo.auto_search_service.application.search.command.SearchResponseCommand;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.product.Product;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
@@ -24,8 +26,8 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
     public List<Product> findAll(String id) {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
         authUserPort.validateAuthOwner(autoSearch.userId());
-        // TODO find products by ids
-        return List.of();
+        SearchResponseCommand command = searchPort.search(SearchRequestCommand.builder().ids(autoSearch.products()).build());
+        return command.data();
     }
 
 }

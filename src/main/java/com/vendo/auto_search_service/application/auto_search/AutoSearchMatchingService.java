@@ -39,7 +39,11 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
         PriceRangeFilter priceRange = PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice());
-        return SearchRequestCommand.from(autoSearch.categoryId(), autoSearch.address(), priceRange);
+        return SearchRequestCommand.builder()
+                .categoryId(autoSearch.categoryId())
+                .address(autoSearch.address())
+                .priceRangeFilter(priceRange)
+                .build();
     }
 
 }
