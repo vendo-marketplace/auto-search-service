@@ -16,8 +16,8 @@ public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
     private final AutoSearchEmailEventProducer emailEventProducer;
 
     @Override
-    public void sendMatching(String id) {
-        matchingEventProducer.send(AutoSearchMatchingEvent.from(id));
+    public void sendMatching(String id, String email) {
+        matchingEventProducer.send(AutoSearchMatchingEvent.from(id, email));
     }
 
     @Override

@@ -22,6 +22,6 @@ public class AutoSearchMatchingEventConsumer {
     )
     public void listenAutoSearchMatchingEvent(AutoSearchMatchingEvent event) {
         log.info("Received event for auto search matching: {}.", event);
-        useCase.match(event.id());
+        useCase.match(event.id(), event.email());
     }
 }

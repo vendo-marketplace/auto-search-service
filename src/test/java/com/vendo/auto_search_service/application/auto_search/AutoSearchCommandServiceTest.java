@@ -89,7 +89,7 @@ class AutoSearchCommandServiceTest {
         assertThat(saved.id()).isNull();
         assertThat(saved.userId()).isEqualTo(authUser.id());
         assertThat(saved.status()).isEqualTo(SearchStatus.ACTIVE);
-        AssertionUtils.assertFrom(saved, request, "id", "userId", "status");
+        AssertionUtils.assertFrom(saved, request, "id", "userId", "status", "products");
     }
 
     @Test
