@@ -26,10 +26,14 @@ endpoints:
   unauthenticated:
     general:
       - /actuator/health
-    auto-search: []
 
 kafka:
   events:
+    notification:
+      code-email-event:
+        topic: "CODE_EMAIL_NOTIFICATION_TOPIC"
+        container-factory: "consumerContainerFactory"
+
     auto-search:
       matching-event:
         topic: "AUTO_SEARCH_MATCHING_TOPIC"
@@ -37,5 +41,3 @@ kafka:
         container-factory: "consumerContainerFactory"
         properties:
           auto-offset-reset: "latest"
-      email-event:
-        topic: "AUTO_SEARCH_EMAIL_NOTIFICATION_TOPIC"
