@@ -40,7 +40,7 @@ public record AutoSearch(
         }
     }
 
-    public AutoSearch fromNew(String userId, LocalDateTime expirationDate) {
+    public AutoSearch toNew(String userId, LocalDateTime expirationDate) {
         return this.toBuilder()
                 .userId(userId)
                 .status(SearchStatus.ACTIVE)

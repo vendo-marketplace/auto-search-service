@@ -38,9 +38,9 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         User authUser = authUserPort.getAuthUser();
-        AutoSearch fromNew = autoSearch.fromNew(authUser.id(), resolveExpiration(autoSearch.expirationDate()));
+        AutoSearch toNew = autoSearch.toNew(authUser.id(), resolveExpiration(autoSearch.expirationDate()));
 
-        String savedId = commandPort.save(fromNew);
+        String savedId = commandPort.save(toNew);
         autoSearchEventSenderPort.sendMatching(savedId, authUser.email());
     }
 
