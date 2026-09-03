@@ -43,11 +43,11 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
         SearchRequestCommand.SearchRequestCommandBuilder builder = SearchRequestCommand.builder();
 
-        if (ObjectUtils.isAllNotNull(autoSearch.minPrice(), autoSearch.maxPrice())) {
+        if (ObjectUtils.isNotNull(autoSearch.minPrice()) || ObjectUtils.isNotNull(autoSearch.maxPrice())) {
             builder.priceRangeFilter(PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice()));
         }
 
-        return SearchRequestCommand.builder()
+        return builder
                 .categoryId(autoSearch.categoryId())
                 .address(autoSearch.address())
                 .build();
