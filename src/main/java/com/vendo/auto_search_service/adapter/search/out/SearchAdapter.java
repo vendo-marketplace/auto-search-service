@@ -17,6 +17,7 @@ class SearchAdapter implements SearchPort {
 
     @Override
     public SearchResponseCommand search(SearchRequestCommand request) {
+        System.out.println(request);
         SearchResponse response = client.search(mapper.toRequest(request));
         return mapper.toResponse(response);
     }
