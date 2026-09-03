@@ -8,6 +8,7 @@ import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchProductUseCase;
 import com.vendo.auto_search_service.port.search.SearchPort;
+import com.vendo.core_lib.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,19 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
     @Override
     public List<Product> findAll(String id) {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
+        return search(autoSearch);
+    }
+
+    private List<Product> search(AutoSearch autoSearch) {
         authUserPort.validateAuthOwner(autoSearch.userId());
-        SearchResponseCommand command = searchPort.search(SearchRequestCommand.builder().ids(autoSearch.products()).build());
+
+        if (CollectionUtils.isEmpty(autoSearch.products())) {
+            return List.of();
+        }
+
+        SearchRequestCommand requestCommand = SearchRequestCommand.builder().ids(autoSearch.products()).build();
+        SearchResponseCommand command = searchPort.search(requestCommand);
+
         return command.data();
     }
 
