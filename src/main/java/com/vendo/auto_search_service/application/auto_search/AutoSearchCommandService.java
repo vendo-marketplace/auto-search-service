@@ -35,7 +35,6 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
     @Override
     public void create(AutoSearch autoSearch) {
         Category category = categoryQueryPort.findById(autoSearch.categoryId());
-        System.out.println(category);
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         User authUser = authUserPort.getAuthUser();
