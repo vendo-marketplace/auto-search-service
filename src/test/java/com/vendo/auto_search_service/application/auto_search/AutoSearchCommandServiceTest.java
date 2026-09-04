@@ -14,6 +14,7 @@ import com.vendo.auto_search_service.domain.user.exception.UserNotOwnerException
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
+import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.category.CategoryQueryPort;
 import com.vendo.core_lib.utils.AssertionUtils;
@@ -51,6 +52,8 @@ class AutoSearchCommandServiceTest {
     private AuthUserPort authUserPort;
     @Mock
     private ExpirationDateProps expirationDateProps;
+    @Mock
+    private AutoSearchEventSenderPort autoSearchEventSenderPort;
 
     @BeforeEach
     void setUp() {
@@ -86,7 +89,7 @@ class AutoSearchCommandServiceTest {
         assertThat(saved.id()).isNull();
         assertThat(saved.userId()).isEqualTo(authUser.id());
         assertThat(saved.status()).isEqualTo(SearchStatus.ACTIVE);
-        AssertionUtils.assertFrom(saved, request, "id", "userId", "status");
+        AssertionUtils.assertFrom(saved, request, "id", "userId", "status", "products");
     }
 
     @Test

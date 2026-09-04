@@ -17,7 +17,7 @@ public class AutoSearchDataBuilder {
                 .address("Kyiv")
                 .status(SearchStatus.ACTIVE)
                 .expirationDate(LocalDateTime.now().plusDays(3))
-                .notifiedProducts(Set.of())
+                .products(Set.of("id1", "id2", "id3"))
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now());
     }

@@ -3,10 +3,6 @@ spring:
     name: auto-search-service
   profiles:
     active: ${APP_PROFILE}
+    include: kafka
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}"
-
-auto-search:
-  expiration:
-    min-days: 1
-    max-days: 7

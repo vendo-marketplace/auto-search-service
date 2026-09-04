@@ -1,4 +1,4 @@
-package com.vendo.auto_search_service.infrastructure.config;
+package com.vendo.auto_search_service.infrastructure.mapper;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.MapperConfig;

@@ -37,7 +37,7 @@ public class MongoAutoSearch {
     private SearchStatus status;
 
     private LocalDateTime expirationDate;
-    private Set<String> notifiedProducts;
+    private Set<String> products;
 
     @CreatedDate
     private Instant createdAt;

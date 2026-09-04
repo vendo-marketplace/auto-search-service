@@ -16,13 +16,12 @@ import java.util.stream.Stream;
 @ConfigurationProperties(prefix = "endpoints.unauthenticated")
 public class PathProps {
 
-    private Set<String> autoSearch;
     private Set<String> general;
 
     public String[] allPaths() {
-        return Stream.of(general, autoSearch)
-                .flatMap(Collection::stream)
+        return Stream.of(general)
                 .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
                 .toArray(String[]::new);
     }
 

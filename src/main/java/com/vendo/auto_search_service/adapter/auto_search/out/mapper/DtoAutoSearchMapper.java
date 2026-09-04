@@ -4,7 +4,7 @@ import com.vendo.auto_search_service.adapter.auto_search.in.dto.AutoSearchRespon
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequest;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.UpdateAutoSearchRequest;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
-import com.vendo.auto_search_service.infrastructure.config.MapStructConfig;
+import com.vendo.auto_search_service.infrastructure.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
