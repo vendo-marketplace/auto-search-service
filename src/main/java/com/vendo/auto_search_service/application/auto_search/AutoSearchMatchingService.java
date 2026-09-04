@@ -43,7 +43,7 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
         SearchRequestCommand.SearchRequestCommandBuilder builder = SearchRequestCommand.builder();
 
-        if (ObjectUtils.isNotNull(autoSearch.minPrice()) || ObjectUtils.isNotNull(autoSearch.maxPrice())) {
+        if (ObjectUtils.isAnyNonNull(autoSearch.minPrice(), autoSearch.maxPrice())) {
             builder.priceRangeFilter(PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice()));
         }
 
