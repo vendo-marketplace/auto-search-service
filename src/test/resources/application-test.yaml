@@ -27,11 +27,12 @@ endpoints:
     general:
       - /actuator/health
 
+
 kafka:
   events:
     notification:
-      code-email-event:
-        topic: "CODE_EMAIL_NOTIFICATION_TOPIC"
+      auto-search-email-event:
+        topic: "AUTO_SEARCH_EMAIL_NOTIFICATION_TOPIC"
         container-factory: "consumerContainerFactory"
 
     auto-search:
