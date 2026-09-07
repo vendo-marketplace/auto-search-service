@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.category.out.config;
 
 import com.vendo.auto_search_service.adapter.security.out.jwt.InternalTokenGenerationPort;
-import com.vendo.core_lib.type.ServiceName;
+import com.vendo.core_lib.types.ServiceName;
 import feign.RequestInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

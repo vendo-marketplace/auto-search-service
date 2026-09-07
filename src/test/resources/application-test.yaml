@@ -5,6 +5,8 @@ spring:
     service-registry:
       auto-registration:
         enabled: false
+  kafka:
+    bootstrap-servers: localhost
 
 eureka:
   client:
@@ -24,4 +26,19 @@ endpoints:
   unauthenticated:
     general:
       - /actuator/health
-    auto-search: []
+
+
+kafka:
+  events:
+    notification:
+      auto-search-email-event:
+        topic: "AUTO_SEARCH_EMAIL_NOTIFICATION_TOPIC"
+        container-factory: "consumerContainerFactory"
+
+    auto-search:
+      matching-event:
+        topic: "AUTO_SEARCH_MATCHING_TOPIC"
+        groupId: "auto_search_matching_group"
+        container-factory: "consumerContainerFactory"
+        properties:
+          auto-offset-reset: "latest"

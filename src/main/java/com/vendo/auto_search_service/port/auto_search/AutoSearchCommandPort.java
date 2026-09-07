@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public interface AutoSearchCommandPort {
 
-    void save(AutoSearch autoSearch);
+    String save(AutoSearch autoSearch);
     void update(String id, AutoSearch autoSearch);
     void delete(String id);
 

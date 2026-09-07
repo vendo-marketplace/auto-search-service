@@ -1,11 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequest;
-import com.vendo.auto_search_service.adapter.auto_search.in.dto.CreateAutoSearchRequestDataBuilder;
-import com.vendo.auto_search_service.adapter.auto_search.in.dto.UpdateAutoSearchRequest;
-import com.vendo.auto_search_service.adapter.auto_search.in.dto.UpdateAutoSearchRequestDataBuilder;
-import com.vendo.auto_search_service.adapter.auto_search.in.validation.PriceRange;
+import com.vendo.auto_search_service.adapter.auto_search.in.dto.*;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
@@ -23,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -41,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@EmbeddedKafka
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -104,7 +102,7 @@ public class AutoSearchCommandControllerIntegrationTest {
         @Test
         void create_shouldReturnBadRequest_whenMinPriceNegative() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .priceRange(PriceRange.builder()
+                    .priceRange(PriceRangeFilter.builder()
                             .minPrice(BigDecimal.valueOf(-1))
                             .maxPrice(BigDecimal.valueOf(100))
                             .build())
@@ -127,7 +125,7 @@ public class AutoSearchCommandControllerIntegrationTest {
         @Test
         void create_shouldReturnBadRequest_whenMaxPriceNegative_andMinPriceLessThanMax() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .priceRange(PriceRange.builder()
+                    .priceRange(PriceRangeFilter.builder()
                             .minPrice(BigDecimal.valueOf(100))
                             .maxPrice(BigDecimal.valueOf(-1))
                             .build())
@@ -151,7 +149,7 @@ public class AutoSearchCommandControllerIntegrationTest {
         @Test
         void create_shouldReturnBadRequest_whenMinPriceGreaterThanMaxPrice() throws Exception {
             CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields()
-                    .priceRange(PriceRange.builder()
+                    .priceRange(PriceRangeFilter.builder()
                             .minPrice(BigDecimal.valueOf(100))
                             .maxPrice(BigDecimal.TEN)
                             .build())

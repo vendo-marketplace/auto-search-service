@@ -23,7 +23,7 @@ public record AutoSearch(
         SearchStatus status,
 
         LocalDateTime expirationDate,
-        Set<String> notifiedProducts,
+        Set<String> products,
 
         Instant createdAt,
         Instant updatedAt
@@ -40,12 +40,12 @@ public record AutoSearch(
         }
     }
 
-    public AutoSearch fromNew(String userId, LocalDateTime expirationDate) {
+    public AutoSearch toNew(String userId, LocalDateTime expirationDate) {
         return this.toBuilder()
                 .userId(userId)
                 .status(SearchStatus.ACTIVE)
                 .expirationDate(expirationDate)
-                .notifiedProducts(Set.of())
+                .products(Set.of())
                 .build();
     }
 }

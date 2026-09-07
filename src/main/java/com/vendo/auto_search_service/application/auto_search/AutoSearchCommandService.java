@@ -3,9 +3,11 @@ package com.vendo.auto_search_service.application.auto_search;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.category.Category;
 import com.vendo.auto_search_service.domain.category.CategoryType;
+import com.vendo.auto_search_service.domain.user.User;
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
+import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchCommandUseCase;
 import com.vendo.auto_search_service.port.category.CategoryQueryPort;
@@ -24,6 +26,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     private final AutoSearchCommandPort commandPort;
     private final AutoSearchQueryPort queryPort;
+    private final AutoSearchEventSenderPort autoSearchEventSenderPort;
 
     private final CategoryQueryPort categoryQueryPort;
 
@@ -34,8 +37,11 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         Category category = categoryQueryPort.findById(autoSearch.categoryId());
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
-        AutoSearch fromNew = autoSearch.fromNew(authUserPort.getAuthUser().id(), resolveExpiration(autoSearch.expirationDate()));
-        commandPort.save(fromNew);
+        User authUser = authUserPort.getAuthUser();
+        AutoSearch toNew = autoSearch.toNew(authUser.id(), resolveExpiration(autoSearch.expirationDate()));
+
+        String savedId = commandPort.save(toNew);
+        autoSearchEventSenderPort.sendMatching(savedId, authUser.email());
     }
 
     @Override
