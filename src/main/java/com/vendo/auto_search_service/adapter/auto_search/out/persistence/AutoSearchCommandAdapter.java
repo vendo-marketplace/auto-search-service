@@ -39,7 +39,7 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
 
     @Override
     public long expireOutdatedRequests(LocalDateTime referenceTime) {
-        return repository.updateStatusForOutdatedRequests(SearchStatus.ACTIVE, referenceTime, SearchStatus.EXPIRED, Instant.now());
+        return repository.expireOutdatedRequests(SearchStatus.ACTIVE, referenceTime, Instant.now());
     }
 
     private MongoAutoSearch findOrThrow(String id) {

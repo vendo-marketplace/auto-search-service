@@ -15,6 +15,6 @@ public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoS
     List<MongoAutoSearch> findAllByUserId(String userId);
 
     @Query("{ 'status': ?0, 'expirationDate': { '$lt': ?1 } }")
-    @Update("{ '$set': { 'status': ?2, 'updatedAt': ?3 } }")
-    long updateStatusForOutdatedRequests(SearchStatus currentStatus, LocalDateTime expirationDateBefore, SearchStatus newStatus, Instant updatedAt);
+    @Update("{ '$set': { 'status': 'EXPIRED', 'updatedAt': ?2 } }")
+    long expireOutdatedRequests(SearchStatus currentStatus, LocalDateTime expirationDateBefore, Instant updatedAt);
 }

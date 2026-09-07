@@ -42,8 +42,9 @@ class AutoSearchCommandAdapterTest {
         MongoAutoSearch entity = MongoAutoSearch.builder().id("id").build();
 
         when(mapper.toEntity(autoSearch)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(entity);
 
-        commandAdapter.save(autoSearch);
+        assertThat(commandAdapter.save(autoSearch)).isEqualTo("id");
 
         verify(repository).save(entity);
     }
@@ -93,24 +94,24 @@ class AutoSearchCommandAdapterTest {
     @Test
     void expireOutdatedRequests_shouldUpdateActiveRequestsToExpired_andReturnUpdatedCount() {
         LocalDateTime referenceTime = LocalDateTime.now();
-        when(repository.updateStatusForOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), eq(SearchStatus.EXPIRED), any()))
+        when(repository.expireOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), any()))
                 .thenReturn(5L);
 
         long expiredCount = commandAdapter.expireOutdatedRequests(referenceTime);
 
         assertThat(expiredCount).isEqualTo(5L);
-        verify(repository).updateStatusForOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), eq(SearchStatus.EXPIRED), any());
+        verify(repository).expireOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), any());
     }
 
     @Test
     void expireOutdatedRequests_shouldStampUpdatedAt() {
         LocalDateTime referenceTime = LocalDateTime.now();
-        when(repository.updateStatusForOutdatedRequests(any(), any(), any(), any())).thenReturn(0L);
+        when(repository.expireOutdatedRequests(any(), any(), any())).thenReturn(0L);
 
         commandAdapter.expireOutdatedRequests(referenceTime);
 
         ArgumentCaptor<Instant> updatedAtCaptor = ArgumentCaptor.forClass(Instant.class);
-        verify(repository).updateStatusForOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), eq(SearchStatus.EXPIRED), updatedAtCaptor.capture());
+        verify(repository).expireOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), updatedAtCaptor.capture());
         assertThat(Duration.between(updatedAtCaptor.getValue(), Instant.now())).isLessThan(Duration.ofSeconds(5));
     }
 }
