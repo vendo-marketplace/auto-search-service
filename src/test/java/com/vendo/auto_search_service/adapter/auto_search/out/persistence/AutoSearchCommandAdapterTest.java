@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -66,6 +67,7 @@ class AutoSearchCommandAdapterTest {
 
         assertThatThrownBy(() -> commandAdapter.update("missing-id", AutoSearchDataBuilder.withAllFields().build()))
                 .isInstanceOf(AutoSearchNotFoundException.class);
+        verify(repository, never()).save(any());
     }
 
     @Test
@@ -97,6 +99,7 @@ class AutoSearchCommandAdapterTest {
         long expiredCount = commandAdapter.expireOutdatedRequests(referenceTime);
 
         assertThat(expiredCount).isEqualTo(5L);
+        verify(repository).updateStatusForOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), eq(SearchStatus.EXPIRED), any());
     }
 
     @Test
@@ -108,6 +111,6 @@ class AutoSearchCommandAdapterTest {
 
         ArgumentCaptor<Instant> updatedAtCaptor = ArgumentCaptor.forClass(Instant.class);
         verify(repository).updateStatusForOutdatedRequests(eq(SearchStatus.ACTIVE), eq(referenceTime), eq(SearchStatus.EXPIRED), updatedAtCaptor.capture());
-        assertThat(updatedAtCaptor.getValue()).isNotNull();
+        assertThat(Duration.between(updatedAtCaptor.getValue(), Instant.now())).isLessThan(Duration.ofSeconds(5));
     }
 }

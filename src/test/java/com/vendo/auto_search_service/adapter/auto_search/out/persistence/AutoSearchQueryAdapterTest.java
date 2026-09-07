@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,9 @@ class AutoSearchQueryAdapterTest {
         when(mapper.toAutoSearches(List.of(entity))).thenReturn(List.of(autoSearch));
 
         assertThat(queryAdapter.findByUserId(userId)).containsExactly(autoSearch);
+
+        verify(repository).findAllByUserId(userId);
+        verify(mapper).toAutoSearches(List.of(entity));
     }
 
     @Test
@@ -49,6 +53,9 @@ class AutoSearchQueryAdapterTest {
         when(mapper.toAutoSearch(entity)).thenReturn(autoSearch);
 
         assertThat(queryAdapter.findById("id")).isEqualTo(autoSearch);
+
+        verify(repository).findById("id");
+        verify(mapper).toAutoSearch(entity);
     }
 
     @Test
@@ -57,5 +64,7 @@ class AutoSearchQueryAdapterTest {
 
         assertThatThrownBy(() -> queryAdapter.findById("missing-id"))
                 .isInstanceOf(AutoSearchNotFoundException.class);
+
+        verify(repository).findById("missing-id");
     }
 }
