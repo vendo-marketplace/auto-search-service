@@ -6,3 +6,10 @@ spring:
     include: kafka
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}"
+
+auto-search:
+  expiration:
+    min-hours: 1
+    max-days: 7
+    scheduler:
+      cron: "0 0 * * * *"

@@ -5,7 +5,6 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -29,13 +28,13 @@ public record AutoSearch(
         Instant updatedAt
 ) {
 
-    public static void validateExpirationDate(LocalDateTime expirationDate, int minDays, int maxDays) {
-        LocalDate today = LocalDate.now(), expirationLocalDate = expirationDate.toLocalDate();
-        LocalDate earliest = today.plusDays(minDays), latest = today.plusDays(maxDays);
+    public static void validateExpirationDate(LocalDateTime expirationDate, int minHours, int maxDays) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime earliest = now.plusHours(minHours), latest = now.plusDays(maxDays);
 
-        if (expirationLocalDate.isBefore(earliest) || expirationLocalDate.isAfter(latest)) {
+        if (expirationDate.isBefore(earliest) || expirationDate.isAfter(latest)) {
             throw new InvalidExpirationDateException(
-                    "Expiration date must be at least a day after today and not later than a week from now."
+                    "Expiration date must be at least " + minHours + " hour(s) from now and not later than " + maxDays + " day(s) from now."
             );
         }
     }
