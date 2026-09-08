@@ -71,7 +71,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     private void validateIfChanged(LocalDateTime expirationDate) {
         if (ObjectUtils.isNotNull(expirationDate)) {
-            AutoSearch.validateExpirationDate(expirationDate, expirationProps.getMinDays(), expirationProps.getMaxDays());
+            AutoSearch.validateExpirationDate(expirationDate, expirationProps.getMinHours(), expirationProps.getMaxDays());
         }
     }
 

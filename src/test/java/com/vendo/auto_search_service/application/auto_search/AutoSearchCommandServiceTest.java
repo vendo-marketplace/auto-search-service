@@ -57,7 +57,7 @@ class AutoSearchCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(expirationDateProps.getMinDays()).thenReturn(1);
+        lenient().when(expirationDateProps.getMinHours()).thenReturn(1);
         lenient().when(expirationDateProps.getMaxDays()).thenReturn(7);
         lenient().when(authUserPort.getAuthUser()).thenReturn(UserDataBuilder.withAllFields().build());
         lenient().when(categoryQueryPort.findById(anyString())).thenReturn(childCategory());
@@ -120,6 +120,29 @@ class AutoSearchCommandServiceTest {
                 .isInstanceOf(InvalidExpirationDateException.class);
 
         verify(commandPort, never()).save(any());
+    }
+
+    @Test
+    void create_shouldThrow_whenExpirationDateIsLessThanMinHoursAway() {
+        AutoSearch request = AutoSearchDataBuilder.withAllFields()
+                .expirationDate(LocalDateTime.now().plusMinutes(30))
+                .build();
+
+        assertThatThrownBy(() -> commandService.create(request))
+                .isInstanceOf(InvalidExpirationDateException.class);
+
+        verify(commandPort, never()).save(any());
+    }
+
+    @Test
+    void create_shouldSucceed_whenExpirationDateIsJustOverMinHoursAway() {
+        AutoSearch request = AutoSearchDataBuilder.withAllFields()
+                .expirationDate(LocalDateTime.now().plusHours(1).plusSeconds(10))
+                .build();
+
+        commandService.create(request);
+
+        verify(commandPort).save(any());
     }
 
     @Test

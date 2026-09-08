@@ -9,7 +9,7 @@ spring:
 
 auto-search:
   expiration:
-    min-days: 1
+    min-hours: 1
     max-days: 7
     scheduler:
       cron: "0 0 * * * *"
