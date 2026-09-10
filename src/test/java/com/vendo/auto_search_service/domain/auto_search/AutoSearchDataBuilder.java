@@ -1,5 +1,8 @@
 package com.vendo.auto_search_service.domain.auto_search;
 
+import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -10,7 +13,7 @@ public class AutoSearchDataBuilder {
     public static AutoSearch.AutoSearchBuilder withAllFields() {
         return AutoSearch.builder()
                 .id("auto-search-id")
-                .userId("user-id")
+                .owner(Owner.from("user-id", "user-email"))
                 .categoryId("category-id")
                 .minPrice(BigDecimal.TEN)
                 .maxPrice(BigDecimal.valueOf(100))

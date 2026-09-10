@@ -2,7 +2,8 @@ package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
-import com.vendo.auto_search_service.domain.auto_search.SearchStatus;
+import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.auto_search_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.auto_search_service.domain.category.exception.CategoryTypeException;
@@ -28,7 +29,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -72,7 +72,7 @@ class AutoSearchCommandServiceTest {
         User authUser = UserDataBuilder.withAllFields().build();
         AutoSearch request = AutoSearchDataBuilder.withAllFields()
                 .id(null)
-                .userId(null)
+                .owner(null)
                 .status(null)
                 .build();
 
@@ -87,7 +87,7 @@ class AutoSearchCommandServiceTest {
 
         AutoSearch saved = captor.getValue();
         assertThat(saved.id()).isNull();
-        assertThat(saved.userId()).isEqualTo(authUser.id());
+        assertThat(saved.owner().id()).isEqualTo(authUser.id());
         assertThat(saved.status()).isEqualTo(SearchStatus.ACTIVE);
         AssertionUtils.assertFrom(saved, request, "id", "userId", "status", "products");
     }
@@ -157,7 +157,7 @@ class AutoSearchCommandServiceTest {
 
         commandService.update(existing.id(), update);
 
-        verify(authUserPort).validateAuthOwner(existing.userId());
+        verify(authUserPort).validateAuthOwner(existing.owner().id());
         verify(categoryQueryPort).findById(update.categoryId());
         verify(commandPort).update(existing.id(), update);
     }
@@ -189,12 +189,12 @@ class AutoSearchCommandServiceTest {
 
     @Test
     void update_shouldPropagateNotOwner() {
-        AutoSearch existing = AutoSearchDataBuilder.withAllFields().userId("owner-id").build();
+        AutoSearch existing = AutoSearchDataBuilder.withAllFields().owner(Owner.from("owner-id", null)).build();
         AutoSearch update = AutoSearchDataBuilder.withAllFields().build();
 
         when(queryPort.findById(existing.id())).thenReturn(existing);
         doThrow(new UserNotOwnerException("You're not owner."))
-                .when(authUserPort).validateAuthOwner(existing.userId());
+                .when(authUserPort).validateAuthOwner(existing.owner().id());
 
         assertThatThrownBy(() -> commandService.update(existing.id(), update))
                 .isInstanceOf(UserNotOwnerException.class);
@@ -231,11 +231,11 @@ class AutoSearchCommandServiceTest {
 
     @Test
     void delete_shouldPropagateNotOwner() {
-        AutoSearch existing = AutoSearchDataBuilder.withAllFields().userId("owner-id").build();
+        AutoSearch existing = AutoSearchDataBuilder.withAllFields().owner(Owner.from("owner-id", null)).build();
 
         when(queryPort.findById(existing.id())).thenReturn(existing);
         doThrow(new UserNotOwnerException("You're not owner."))
-                .when(authUserPort).validateAuthOwner(existing.userId());
+                .when(authUserPort).validateAuthOwner(existing.owner().id());
 
         assertThatThrownBy(() -> commandService.delete(existing.id()))
                 .isInstanceOf(UserNotOwnerException.class);
