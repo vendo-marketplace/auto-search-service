@@ -40,7 +40,7 @@ public class AutoSearchMatchingServiceTest {
     private AutoSearchEventSenderPort eventSenderPort;
 
     @Test
-    void match_shouldMatchProductsByRequest() {
+    void match_shouldMatchInitProductsByRequest() {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
         User user = UserDataBuilder.withAllFields().build();
         Product product = ProductDataBuilder.withAllFields();
@@ -50,7 +50,7 @@ public class AutoSearchMatchingServiceTest {
         doNothing().when(autoSearchCommandPort).update(eq(autoSearch.id()), any());
         doNothing().when(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
 
-        service.match(autoSearch.id(), user.email());
+        service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
         ArgumentCaptor<AutoSearch> autoSearchCaptor = ArgumentCaptor.forClass(AutoSearch.class);
@@ -74,14 +74,14 @@ public class AutoSearchMatchingServiceTest {
     }
 
     @Test
-    void match_shouldNotUpdateAndSentEvent_whenNoProductsFound() {
+    void match_Init_shouldNotUpdateAndSentEvent_whenNoProductsFound() {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
         User user = UserDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
 
-        service.match(autoSearch.id(), user.email());
+        service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
 

@@ -1,6 +1,7 @@
 package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
+import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.category.Category;
 import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.domain.user.User;
@@ -38,7 +39,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         User authUser = authUserPort.getAuthUser();
-        AutoSearch toNew = autoSearch.toNew(authUser.id(), resolveExpiration(autoSearch.expirationDate()));
+        AutoSearch toNew = autoSearch.toNew(Owner.from(authUser.id(), authUser.email()), resolveExpiration(autoSearch.expirationDate()));
 
         String savedId = commandPort.save(toNew);
         autoSearchEventSenderPort.sendMatching(savedId, authUser.email());
@@ -46,8 +47,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     @Override
     public void update(String id, AutoSearch autoSearch) {
-        AutoSearch existing = queryPort.findById(id);
-        authUserPort.validateAuthOwner(existing.userId());
+        Owner owner = queryPort.findById(id).owner();
+        authUserPort.validateAuthOwner(owner.id());
 
         validateIfChanged(autoSearch.categoryId());
         validateIfChanged(autoSearch.expirationDate());
@@ -57,8 +58,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     @Override
     public void delete(String id) {
-        AutoSearch existing = queryPort.findById(id);
-        authUserPort.validateAuthOwner(existing.userId());
+        Owner owner = queryPort.findById(id).owner();
+        authUserPort.validateAuthOwner(owner.id());
         commandPort.delete(id);
     }
 

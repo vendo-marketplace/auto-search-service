@@ -11,6 +11,7 @@ public record Product(
         String title,
         Integer quantity,
         BigDecimal price,
+        String address,
 
         String ownerId,
         String categoryId,
