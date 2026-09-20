@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 @Mapper(config = MapStructConfig.class)
 public interface EventProductMapper {
 
-    // TODO cannot map address event
     Product toProduct(ProductCreatedEvent event);
 
 }

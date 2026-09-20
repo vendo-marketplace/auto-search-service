@@ -36,9 +36,7 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
 
         SearchResponseCommand response = searchPort.search(buildSearchRequest(autoSearch));
-        if (CollectionUtils.isEmpty(response.data())) {
-            return;
-        }
+        if (CollectionUtils.isEmpty(response.data())) return;
 
         AutoSearch update = AutoSearch.builder().products(Product.getProductIds(response.data())).build();
         autoSearchCommandPort.update(id, update);
@@ -53,10 +51,7 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
-            if (entities.size() < MAX_PAGE_SIZE) {
-                break;
-            }
-
+            if (entities.size() < MAX_PAGE_SIZE) break;
             sendNewProductsEvent(entities);
         }
     }
@@ -72,9 +67,6 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
             builder.priceRangeFilter(PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice()));
         }
 
-        return builder
-                .categoryId(autoSearch.categoryId())
-                .address(autoSearch.address())
-                .build();
+        return builder.categoryId(autoSearch.categoryId()).address(autoSearch.address()).build();
     }
 }
