@@ -30,7 +30,7 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
     }
 
     private List<Product> search(AutoSearch autoSearch) {
-        authUserPort.validateAuthOwner(autoSearch.userId());
+        authUserPort.validateAuthOwner(autoSearch.owner().id());
 
         if (CollectionUtils.isEmpty(autoSearch.products())) {
             return List.of();

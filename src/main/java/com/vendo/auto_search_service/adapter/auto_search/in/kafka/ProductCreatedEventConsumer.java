@@ -19,7 +19,7 @@ public class ProductCreatedEventConsumer {
     @KafkaListener(
             topics = "${kafka.events.product.created-event.topic}",
             groupId = "${kafka.events.product.created-event.groupId}",
-            properties = {"auto.offset.reset: ${kafka.events.product.created-event.auto-offset-reset}"},
+            properties = {"auto.offset.reset: ${kafka.events.product.created-event.properties.auto-offset-reset}"},
             containerFactory = "${kafka.events.product.created-event.container-factory}"
     )
     public void listenProductCreatedEvent(ProductCreatedEvent event) {

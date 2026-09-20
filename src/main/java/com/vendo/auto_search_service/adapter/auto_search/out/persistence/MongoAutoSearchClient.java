@@ -1,5 +1,6 @@
 package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
+import com.vendo.auto_search_service.domain.product.nested.Address;
 import com.vendo.core_lib.utils.ClassFields;
 import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.core_lib.utils.StringUtils;
@@ -26,7 +27,7 @@ final class MongoAutoSearchClient {
     private static final String addressField = ClassFields.nameOf("address", MongoAutoSearch.class);
     private static final String categoryIdField = ClassFields.nameOf("categoryId", MongoAutoSearch.class);
 
-    Page<MongoAutoSearch> findAllBy(String categoryId, String address, BigDecimal price, Pageable pageable) {
+    Page<MongoAutoSearch> findAllBy(String categoryId, Address address, BigDecimal price, Pageable pageable) {
         if (StringUtils.isEmpty(categoryId)) throw new IllegalArgumentException("Category is required.");
 
         Query query = new Query(Criteria.where(categoryIdField).is(categoryId));
@@ -37,11 +38,11 @@ final class MongoAutoSearchClient {
         return withPageable(query, pageable);
     }
 
-    private void withAddressQuery(Query query, String address) {
-        if (!StringUtils.isEmpty(address)) {
+    private void withAddressQuery(Query query, Address address) {
+        if (!ObjectUtils.isNull(address)) {
             Criteria criteria = Criteria.where(addressField)
                     .is(address)
-                    .orOperator(Criteria.where(address).isNull());
+                    .orOperator(Criteria.where(addressField).isNull());
 
             query.addCriteria(criteria);
         }

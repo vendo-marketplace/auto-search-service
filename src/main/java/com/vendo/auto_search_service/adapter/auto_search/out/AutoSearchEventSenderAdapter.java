@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
-    private final AutoSearchReadyEventProducer emailEventProducer;
+    private final AutoSearchReadyEventProducer readyEventProducer;
     private final AutoSearchMatchingEventProducer matchingEventProducer;
     private final AutoSearchNewProductEventProducer newProductEventProducer;
 
@@ -25,7 +25,7 @@ public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
     @Override
     public void sendRequestReady(String id, String email) {
-        emailEventProducer.send(AutoSearchReadyEvent.from(id, email));
+        readyEventProducer.send(AutoSearchReadyEvent.from(id, email));
     }
 
     @Override

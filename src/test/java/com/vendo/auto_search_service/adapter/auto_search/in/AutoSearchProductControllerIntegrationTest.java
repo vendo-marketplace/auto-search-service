@@ -74,7 +74,7 @@ public class AutoSearchProductControllerIntegrationTest {
     void findAll_shouldReturnAutoSearchProducts() throws Exception {
         String autoSearchId = "id";
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
-        addAuthUser(autoSearch.userId());
+        addAuthUser(autoSearch.owner().id());
         Product product = ProductDataBuilder.withAllFields();
         SearchRequestCommand requestSearch = SearchRequestCommand.builder().ids(autoSearch.products()).build();
         SearchResponseCommand responseSearch = new SearchResponseCommand(List.of(product));
@@ -101,7 +101,7 @@ public class AutoSearchProductControllerIntegrationTest {
     void findAll_shouldReturnNotFound_whenAutoSearchNotFound() throws Exception {
         String autoSearchId = "id";
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
-        addAuthUser(autoSearch.userId());
+        addAuthUser(autoSearch.owner().id());
 
         when(autoSearchQueryPort.findById(autoSearchId)).thenThrow(new AutoSearchNotFoundException("Auto search request not found."));
 
@@ -123,7 +123,7 @@ public class AutoSearchProductControllerIntegrationTest {
     void findAll_shouldReturnForbidden_whenNotAutoSearchOwner() throws Exception {
         String autoSearchId = "id";
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
-        addAuthUser(autoSearch.userId());
+        addAuthUser(autoSearch.owner().id());
 
         when(autoSearchQueryPort.findById(autoSearchId)).thenThrow(new UserNotOwnerException("You're not owner."));
 

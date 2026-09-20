@@ -53,7 +53,10 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
-            if (entities.size() < MAX_PAGE_SIZE) break;
+            if (entities.size() < MAX_PAGE_SIZE) {
+                break;
+            }
+
             sendNewProductsEvent(entities);
         }
     }

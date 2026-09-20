@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AutoSearchNewProductEventProducer {
 
-    @Value("${kafka.events.notification.auto-search-new-product-event.topic}")
+    @Value("${kafka.events.auto-search.new-product-event.topic}")
     private String topic;
 
     private final KafkaTemplate<String, AutoSearchNewProductEvent> kafkaTemplate;
