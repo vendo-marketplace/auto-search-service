@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AutoSearchEmailEventProducer {
+public class AutoSearchReadyEventProducer {
 
-    @Value("${kafka.events.notification.auto-search-email-event.topic}")
+    @Value("${kafka.events.notification.auto-search-ready-event.topic}")
     private String topic;
 
     private final KafkaTemplate<String, AutoSearchReadyEvent> kafkaTemplate;
 
     public void send(AutoSearchReadyEvent event) {
         kafkaTemplate.send(topic, event);
-        log.info("Sent event for auto search email: {}.", event);
+        log.info("Sent event for auto search ready: {}.", event);
     }
 
 }

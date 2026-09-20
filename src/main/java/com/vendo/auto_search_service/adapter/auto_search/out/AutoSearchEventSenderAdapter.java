@@ -1,6 +1,6 @@
 package com.vendo.auto_search_service.adapter.auto_search.out;
 
-import com.vendo.auto_search_service.adapter.auto_search.out.kafka.AutoSearchEmailEventProducer;
+import com.vendo.auto_search_service.adapter.auto_search.out.kafka.AutoSearchReadyEventProducer;
 import com.vendo.auto_search_service.adapter.auto_search.out.kafka.AutoSearchMatchingEventProducer;
 import com.vendo.auto_search_service.adapter.auto_search.out.kafka.AutoSearchNewProductEventProducer;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
-    private final AutoSearchEmailEventProducer emailEventProducer;
+    private final AutoSearchReadyEventProducer emailEventProducer;
     private final AutoSearchMatchingEventProducer matchingEventProducer;
     private final AutoSearchNewProductEventProducer newProductEventProducer;
 
