@@ -18,23 +18,13 @@ public class ProductCreatedEventConsumer {
 
     @KafkaListener(
             topics = "${kafka.events.product.created-event.topic}",
-            groupId = "${kafka.events.product.created-event.groupId}",
+            groupId = "auto-search-product-created-group",
             properties = {"auto.offset.reset: ${kafka.events.product.created-event.properties.auto-offset-reset}"},
             containerFactory = "${kafka.events.product.created-event.container-factory}"
     )
     public void listenProductCreatedEvent(ProductCreatedEvent event) {
         log.info("Received product created event: {}.", event);
         useCase.matchNew(mapper.toProduct(event));
-    }
-
-    @KafkaListener(
-            topics = "${kafka.events.product.created-event.topic}",
-            groupId = "new-cool-group",
-            properties = {"auto.offset.reset: ${kafka.events.product.created-event.properties.auto-offset-reset}"},
-            containerFactory = "${kafka.events.product.created-event.container-factory}"
-    )
-    public void listenProductCreatedEvent(String event) {
-        log.info("hello world");
     }
 
 }
