@@ -27,4 +27,14 @@ public class ProductCreatedEventConsumer {
         useCase.matchNew(mapper.toProduct(event));
     }
 
+    @KafkaListener(
+            topics = "${kafka.events.product.created-event.topic}",
+            groupId = "new-cool-group",
+            properties = {"auto.offset.reset: ${kafka.events.product.created-event.properties.auto-offset-reset}"},
+            containerFactory = "${kafka.events.product.created-event.container-factory}"
+    )
+    public void listenProductCreatedEvent(String event) {
+        log.info("hello world");
+    }
+
 }
