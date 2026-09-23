@@ -50,4 +50,9 @@ public record AutoSearch(
                 .products(Set.of())
                 .build();
     }
+
+    public Set<String> collectProducts(String productId) {
+        products.add(productId);
+        return products;
+    }
 }

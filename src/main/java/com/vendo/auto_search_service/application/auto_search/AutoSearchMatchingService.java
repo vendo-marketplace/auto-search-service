@@ -51,13 +51,14 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
+            entities.parallelStream().forEach(autoSearch -> processEntity(product.id(), autoSearch));
             if (entities.size() < MAX_PAGE_SIZE) break;
-            sendNewProductsEvent(entities);
         }
     }
 
-    private void sendNewProductsEvent(List<AutoSearch> entities) {
-        entities.forEach(entity -> eventSenderPort.sendRequestNewProduct(entity.id(), entity.owner().email()));
+    private void processEntity(String productId, AutoSearch autoSearch) {
+        autoSearchCommandPort.update(autoSearch.id(), AutoSearch.builder().products(autoSearch.collectProducts(productId)).build());
+        eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
     }
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
