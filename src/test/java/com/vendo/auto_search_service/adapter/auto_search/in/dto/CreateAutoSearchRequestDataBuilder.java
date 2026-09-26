@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class CreateAutoSearchRequestDataBuilder {
 
     public static CreateAutoSearchRequest.CreateAutoSearchRequestBuilder withAllFields() {
-        Address address = new Address("region", "city", new Address.Location(1,2));
+        Address address = new Address("city");
 
         return CreateAutoSearchRequest.builder()
                 .categoryId("category-id")

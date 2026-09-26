@@ -12,7 +12,7 @@ import java.util.Set;
 public class AutoSearchDataBuilder {
 
     public static AutoSearch.AutoSearchBuilder withAllFields() {
-        Address address = new Address("region", "city", new Address.Location(1,2));
+        Address address = new Address("city");
 
         return AutoSearch.builder()
                 .id("auto-search-id")

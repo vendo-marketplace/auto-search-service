@@ -16,7 +16,7 @@ public class ProductDataBuilder {
                 "title",
                 1,
                 BigDecimal.ONE,
-                new Address("Region", "City", new Address.Location(1,1)),
+                new Address("city"),
                 String.valueOf(UUID.randomUUID()),
                 String.valueOf(UUID.randomUUID()),
                 true,

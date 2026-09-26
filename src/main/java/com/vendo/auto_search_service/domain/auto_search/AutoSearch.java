@@ -1,9 +1,9 @@
 package com.vendo.auto_search_service.domain.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
+import com.vendo.auto_search_service.shared.Address;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
-import com.vendo.auto_search_service.shared.Address;
 import lombok.Builder;
 
 import java.math.BigDecimal;
