@@ -34,7 +34,7 @@ final class MongoAutoSearchClient {
 
         Query query = new Query(Criteria.where(categoryIdField).is(categoryId));
 
-        withAddressQuery(query, address);
+//        withAddressQuery(query, address);
         withPriceQuery(query, price);
 
         log.info("Query: {}", query);
