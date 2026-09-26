@@ -16,12 +16,12 @@ public class AutoSearchMatchingEventConsumer {
 
     @KafkaListener(
             topics = "${kafka.events.auto-search.matching-event.topic}",
-            groupId = "${kafka.events.auto-search.matching-event.groupId}",
+            groupId = "auto-search-matching-group",
             properties = {"auto.offset.reset: ${kafka.events.auto-search.matching-event.properties.auto-offset-reset}"},
             containerFactory = "${kafka.events.auto-search.matching-event.container-factory}"
     )
     public void listenAutoSearchMatchingEvent(AutoSearchMatchingEvent event) {
         log.info("Received event for auto search matching: {}.", event);
-        useCase.match(event.id(), event.email());
+        useCase.matchInit(event.id(), event.email());
     }
 }

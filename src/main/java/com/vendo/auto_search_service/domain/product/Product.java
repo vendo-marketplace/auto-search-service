@@ -1,5 +1,7 @@
 package com.vendo.auto_search_service.domain.product;
 
+import com.vendo.auto_search_service.shared.Address;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -11,6 +13,7 @@ public record Product(
         String title,
         Integer quantity,
         BigDecimal price,
+        Address address,
 
         String ownerId,
         String categoryId,

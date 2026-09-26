@@ -1,6 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 
 import com.vendo.auto_search_service.domain.product.Product;
+import com.vendo.auto_search_service.shared.Address;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,6 +16,7 @@ public class ProductDataBuilder {
                 "title",
                 1,
                 BigDecimal.ONE,
+                new Address("city"),
                 String.valueOf(UUID.randomUUID()),
                 String.valueOf(UUID.randomUUID()),
                 true,
