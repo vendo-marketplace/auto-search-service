@@ -1,4 +1,4 @@
-package com.vendo.auto_search_service.domain.product.nested;
+package com.vendo.auto_search_service.shared;
 
 public record Address(
         String region,

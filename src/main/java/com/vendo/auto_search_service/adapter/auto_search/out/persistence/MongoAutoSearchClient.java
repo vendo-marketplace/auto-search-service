@@ -1,6 +1,6 @@
 package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
-import com.vendo.auto_search_service.domain.product.nested.Address;
+import com.vendo.auto_search_service.shared.Address;
 import com.vendo.core_lib.utils.ClassFields;
 import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.core_lib.utils.StringUtils;
@@ -54,13 +54,16 @@ final class MongoAutoSearchClient {
 
     private void withPriceQuery(Query query, BigDecimal price) {
         if (ObjectUtils.isNotNull(price)) {
-            Criteria minPriceCriteria = Criteria.where(minPriceField)
-                    .lte(price)
-                    .orOperator(Criteria.where(minPriceField).isNull());
 
-            Criteria maxPriceCriteria = Criteria.where(maxPriceField)
-                    .gte(price)
-                    .orOperator(Criteria.where(maxPriceField).isNull());
+            Criteria minPriceCriteria = new Criteria().orOperator(
+                    Criteria.where(minPriceField).lte(price),
+                    Criteria.where(minPriceField).isNull()
+            );
+
+            Criteria maxPriceCriteria = new Criteria().orOperator(
+                    Criteria.where(maxPriceField).gte(price),
+                    Criteria.where(maxPriceField).isNull()
+            );
 
             query.addCriteria(minPriceCriteria.andOperator(maxPriceCriteria));
         }

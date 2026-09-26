@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 
 import com.vendo.auto_search_service.domain.product.Product;
-import com.vendo.auto_search_service.domain.product.nested.Address;
+import com.vendo.auto_search_service.shared.Address;
 
 import java.math.BigDecimal;
 import java.time.Instant;
