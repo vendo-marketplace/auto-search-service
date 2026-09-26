@@ -24,7 +24,7 @@ final class MongoAutoSearchClient {
 
     private static final String minPriceField = ClassFields.nameOf("minPrice", MongoAutoSearch.class);
     private static final String maxPriceField = ClassFields.nameOf("maxPrice", MongoAutoSearch.class);
-    private static final String addressField = ClassFields.nameOf("address", MongoAutoSearch.class);
+    private static final String addressCityField = ClassFields.nameOf("address.city", MongoAutoSearch.class);
     private static final String categoryIdField = ClassFields.nameOf("categoryId", MongoAutoSearch.class);
 
     Page<MongoAutoSearch> findAllBy(String categoryId, Address address, BigDecimal price, Pageable pageable) {
@@ -32,7 +32,7 @@ final class MongoAutoSearchClient {
 
         Query query = new Query(Criteria.where(categoryIdField).is(categoryId));
 
-//        withAddressQuery(query, address);
+        withAddressQuery(query, address);
         withPriceQuery(query, price);
 
         return withPageable(query, pageable);
@@ -40,9 +40,11 @@ final class MongoAutoSearchClient {
 
     private void withAddressQuery(Query query, Address address) {
         if (!ObjectUtils.isNull(address)) {
-            Criteria criteria = Criteria.where(addressField)
-                    .is(address)
-                    .orOperator(Criteria.where(addressField).isNull());
+
+            Criteria criteria = new Criteria().orOperator(
+                    Criteria.where(addressCityField).is(address.city()),
+                    Criteria.where(addressCityField).isNull()
+            );
 
             query.addCriteria(criteria);
         }

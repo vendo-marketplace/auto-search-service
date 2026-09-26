@@ -2,6 +2,7 @@ package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
+import com.vendo.auto_search_service.shared.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +36,7 @@ public class MongoAutoSearch {
     private String categoryId;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
-    private String address;
+    private Address address;
 
     private SearchStatus status;
 
