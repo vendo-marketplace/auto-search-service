@@ -22,9 +22,7 @@ class AutoSearchQueryAdapter implements AutoSearchQueryPort {
 
     @Override
     public List<AutoSearch> findAll(FindAllRequest request, Pageable pageable) {
-        System.out.println("Request: " + request);
         Page<MongoAutoSearch> entities = client.findAllBy(request.categoryId(), request.address(), request.price(), pageable);
-        System.out.println(entities.getContent());
         return mapper.toAutoSearches(entities.getContent());
     }
 
