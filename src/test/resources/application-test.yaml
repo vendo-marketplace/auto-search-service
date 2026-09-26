@@ -32,7 +32,6 @@ kafka:
     product:
       created-event:
         topic: "PRODUCT_CREATED_EVENT_TOPIC"
-        groupId: "product_created_event_group"
         container-factory: "consumerContainerFactory"
         properties:
           auto-offset-reset: "latest"
@@ -44,7 +43,6 @@ kafka:
         topic: "AUTO_SEARCH_NEW_PRODUCT_EVENT_TOPIC"
       matching-event:
         topic: "AUTO_SEARCH_MATCHING_TOPIC"
-        groupId: "auto_search_matching_group"
         container-factory: "consumerContainerFactory"
         properties:
           auto-offset-reset: "latest"

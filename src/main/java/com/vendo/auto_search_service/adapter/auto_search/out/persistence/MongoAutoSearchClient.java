@@ -1,6 +1,7 @@
 package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
 import com.vendo.auto_search_service.shared.Address;
+import com.vendo.core_lib.constants.Separators;
 import com.vendo.core_lib.utils.ClassFields;
 import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.core_lib.utils.StringUtils;
@@ -24,7 +25,8 @@ final class MongoAutoSearchClient {
 
     private static final String minPriceField = ClassFields.nameOf("minPrice", MongoAutoSearch.class);
     private static final String maxPriceField = ClassFields.nameOf("maxPrice", MongoAutoSearch.class);
-    private static final String addressCityField = ClassFields.nameOf("address.city", MongoAutoSearch.class);
+    private static final String addressField = ClassFields.nameOf("address", MongoAutoSearch.class);
+    private static final String cityField = ClassFields.nameOf("city", Address.class);
     private static final String categoryIdField = ClassFields.nameOf("categoryId", MongoAutoSearch.class);
 
     Page<MongoAutoSearch> findAllBy(String categoryId, Address address, BigDecimal price, Pageable pageable) {
@@ -42,8 +44,8 @@ final class MongoAutoSearchClient {
         if (!ObjectUtils.isNull(address)) {
 
             Criteria criteria = new Criteria().orOperator(
-                    Criteria.where(addressCityField).is(address.city()),
-                    Criteria.where(addressCityField).isNull()
+                    Criteria.where(addressField + Separators.DOT_SEPARATOR + cityField).is(address.city()),
+                    Criteria.where(cityField).isNull()
             );
 
             query.addCriteria(criteria);
