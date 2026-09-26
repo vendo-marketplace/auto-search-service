@@ -5,6 +5,7 @@ import com.vendo.core_lib.utils.ClassFields;
 import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 final class MongoAutoSearchClient {
@@ -34,6 +36,8 @@ final class MongoAutoSearchClient {
 
         withAddressQuery(query, address);
         withPriceQuery(query, price);
+
+        log.info("Query: {}", query);
 
         return withPageable(query, pageable);
     }
