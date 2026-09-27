@@ -25,7 +25,7 @@ final class MongoAutoSearchClient {
 
     private static final String minPriceField = ClassFields.nameOf("minPrice", MongoAutoSearch.class);
     private static final String maxPriceField = ClassFields.nameOf("maxPrice", MongoAutoSearch.class);
-    private static final String addressField = ClassFields.nameOf("addressFilter", MongoAutoSearch.class);
+    private static final String addressField = ClassFields.nameOf("address", MongoAutoSearch.class);
     private static final String cityField = ClassFields.nameOf("city", Address.class);
     private static final String categoryIdField = ClassFields.nameOf("categoryId", MongoAutoSearch.class);
 
