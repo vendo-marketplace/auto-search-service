@@ -7,7 +7,7 @@ import java.util.List;
 
 public record SearchRequest(
         String categoryId,
-        Address address,
+        Address addressFilter,
         List<String> ids,
         PriceRangeFilter priceRangeFilter
 ) {

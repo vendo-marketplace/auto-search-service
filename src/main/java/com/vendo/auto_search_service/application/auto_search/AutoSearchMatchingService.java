@@ -71,9 +71,9 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         }
 
         if (ObjectUtils.isNotNull(autoSearch.address()) && !StringUtils.isEmpty(autoSearch.address().city())) {
-            builder.address(Address.from(autoSearch.address().city()));
+            builder.addressFilter(Address.from(autoSearch.address().city()));
         }
 
-        return builder.categoryId(autoSearch.categoryId()).address(autoSearch.address()).build();
+        return builder.categoryId(autoSearch.categoryId()).build();
     }
 }

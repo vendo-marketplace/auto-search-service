@@ -9,7 +9,7 @@ import java.util.Set;
 @Builder
 public record SearchRequestCommand(
         String categoryId,
-        Address address,
+        Address addressFilter,
         Set<String> ids,
         PriceRangeFilter priceRangeFilter
 ) {
