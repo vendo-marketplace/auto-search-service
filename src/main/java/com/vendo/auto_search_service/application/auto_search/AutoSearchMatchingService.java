@@ -11,8 +11,10 @@ import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchMatchingUseCase;
 import com.vendo.auto_search_service.port.search.SearchPort;
+import com.vendo.auto_search_service.shared.Address;
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.ObjectUtils;
+import com.vendo.core_lib.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,10 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         if (ObjectUtils.isAnyNonNull(autoSearch.minPrice(), autoSearch.maxPrice())) {
             builder.priceRangeFilter(PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice()));
+        }
+
+        if (ObjectUtils.isNotNull(autoSearch.address()) && !StringUtils.isEmpty(autoSearch.address().city())) {
+            builder.address(Address.from(autoSearch.address().city()));
         }
 
         return builder.categoryId(autoSearch.categoryId()).address(autoSearch.address()).build();
