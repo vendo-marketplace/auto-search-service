@@ -62,7 +62,7 @@ public class AutoSearchMatchingServiceTest {
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
-        assertThat(requestCommandValue.address()).isEqualTo(autoSearch.address());
+        assertThat(requestCommandValue.addressFilter()).isEqualTo(autoSearch.address());
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
@@ -92,7 +92,7 @@ public class AutoSearchMatchingServiceTest {
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
-        assertThat(requestCommandValue.address()).isEqualTo(autoSearch.address());
+        assertThat(requestCommandValue.addressFilter()).isEqualTo(autoSearch.address());
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
