@@ -43,9 +43,10 @@ final class MongoAutoSearchClient {
     private void withAddressQuery(Query query, Address address) {
         if (!ObjectUtils.isNull(address)) {
 
+            String cityFormatted = addressField + Separators.DOT_SEPARATOR + cityField;
             Criteria criteria = new Criteria().orOperator(
-                    Criteria.where(addressField + Separators.DOT_SEPARATOR + cityField).is(address.city()),
-                    Criteria.where(cityField).isNull()
+                    Criteria.where(cityFormatted).is(address.city()),
+                    Criteria.where(cityFormatted).isNull()
             );
 
             query.addCriteria(criteria);
