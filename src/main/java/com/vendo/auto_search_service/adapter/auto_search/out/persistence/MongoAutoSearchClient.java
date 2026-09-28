@@ -53,8 +53,6 @@ final class MongoAutoSearchClient {
         }
     }
 
-    // TODO when retrieving products from auto search filter those are not matching any more and delete, then return new list
-
     private void withPriceQuery(Query query, BigDecimal price) {
         if (ObjectUtils.isNotNull(price)) {
 
