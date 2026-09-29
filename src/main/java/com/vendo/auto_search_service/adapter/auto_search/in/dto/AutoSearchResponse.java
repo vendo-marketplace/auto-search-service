@@ -7,6 +7,7 @@ import com.vendo.auto_search_service.shared.Address;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public record AutoSearchResponse(
         String id,
@@ -19,7 +20,9 @@ public record AutoSearchResponse(
         Address address,
 
         SearchStatus status,
+
         LocalDateTime expirationDate,
+        Set<String> products,
 
         Instant createdAt,
         Instant updatedAt
