@@ -1,11 +1,11 @@
 package com.vendo.auto_search_service.adapter.auto_search.in;
 
+import com.vendo.auto_search_service.adapter.auto_search.out.kafka.AutoSearchNewProductEventProducer;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
 import com.vendo.auto_search_service.domain.user.User;
 import com.vendo.auto_search_service.domain.user.UserDataBuilder;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchQueryUseCase;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -38,6 +37,8 @@ class AutoSearchQueryControllerIntegrationTest {
 
     @MockitoBean
     private AutoSearchQueryUseCase autoSearchQueryUseCase;
+    @MockitoBean
+    private AutoSearchNewProductEventProducer productEventProducer;
 
     private SecurityContext securityContext;
 

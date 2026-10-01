@@ -1,6 +1,9 @@
 package com.vendo.auto_search_service.domain.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
+import com.vendo.auto_search_service.shared.Address;
+import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -13,12 +16,12 @@ import java.util.Set;
 public record AutoSearch(
         String id,
 
-        String userId,
+        Owner owner,
 
         String categoryId,
         BigDecimal minPrice,
         BigDecimal maxPrice,
-        String address,
+        Address address,
 
         SearchStatus status,
 
@@ -40,12 +43,17 @@ public record AutoSearch(
         }
     }
 
-    public AutoSearch toNew(String userId, LocalDateTime expirationDate) {
+    public AutoSearch toNew(Owner owner, LocalDateTime expirationDate) {
         return this.toBuilder()
-                .userId(userId)
+                .owner(owner)
                 .status(SearchStatus.ACTIVE)
                 .expirationDate(expirationDate)
                 .products(Set.of())
                 .build();
+    }
+
+    public Set<String> collectProducts(String productId) {
+        products.add(productId);
+        return products;
     }
 }

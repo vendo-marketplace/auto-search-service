@@ -1,10 +1,13 @@
 package com.vendo.auto_search_service.adapter.auto_search.out.persistence;
 
 import com.vendo.auto_search_service.adapter.auto_search.out.mapper.AutoSearchMapper;
+import com.vendo.auto_search_service.application.auto_search.command.FindAllRequest;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,11 +17,18 @@ import java.util.List;
 class AutoSearchQueryAdapter implements AutoSearchQueryPort {
 
     private final AutoSearchMapper mapper;
+    private final MongoAutoSearchClient client;
     private final MongoAutoSearchRepository repository;
 
     @Override
+    public List<AutoSearch> findAll(FindAllRequest request, Pageable pageable) {
+        Page<MongoAutoSearch> entities = client.findAllBy(request.categoryId(), request.address(), request.price(), pageable);
+        return mapper.toAutoSearches(entities.getContent());
+    }
+
+    @Override
     public List<AutoSearch> findByUserId(String userId) {
-        List<MongoAutoSearch> entities = repository.findAllByUserId(userId);
+        List<MongoAutoSearch> entities = repository.findAllByOwner_Id(userId);
         return mapper.toAutoSearches(entities);
     }
 
