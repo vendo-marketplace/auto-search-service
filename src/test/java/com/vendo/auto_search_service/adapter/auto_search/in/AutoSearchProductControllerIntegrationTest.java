@@ -12,6 +12,7 @@ import com.vendo.auto_search_service.domain.product.Product;
 import com.vendo.auto_search_service.domain.user.User;
 import com.vendo.auto_search_service.domain.user.UserDataBuilder;
 import com.vendo.auto_search_service.domain.user.exception.UserNotOwnerException;
+import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.search.SearchPort;
 import com.vendo.security_lib.exception.ExceptionResponse;
@@ -19,6 +20,9 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +36,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -55,6 +62,8 @@ public class AutoSearchProductControllerIntegrationTest {
     private SearchPort searchPort;
     @MockitoBean
     private AutoSearchQueryPort autoSearchQueryPort;
+    @MockitoBean
+    private AutoSearchCommandPort autoSearchCommandPort;
 
     private SecurityContext securityContext;
 
@@ -73,9 +82,11 @@ public class AutoSearchProductControllerIntegrationTest {
     @Test
     void findAll_shouldReturnAutoSearchProducts() throws Exception {
         String autoSearchId = "id";
-        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields()
+                .products(Set.of(product.id())).minPrice(null).maxPrice(null).address(null).categoryId(product.categoryId())
+                .build();
         addAuthUser(autoSearch.owner().id());
-        Product product = ProductDataBuilder.withAllFields();
         SearchRequestCommand requestSearch = SearchRequestCommand.builder().ids(autoSearch.products()).build();
         SearchResponseCommand responseSearch = new SearchResponseCommand(List.of(product));
 
@@ -92,6 +103,32 @@ public class AutoSearchProductControllerIntegrationTest {
         assertThat(response.data()).isNotNull();
         assertThat(response.data().size()).isEqualTo(1);
         assertThat(response.data().get(0)).isEqualTo(product);
+
+        verify(autoSearchQueryPort).findById(autoSearchId);
+        verify(searchPort).search(requestSearch);
+    }
+
+    @ParameterizedTest
+    @MethodSource("autoSearchProvider")
+    void findAll_shouldFilterIrrelevantProductsFromRequest(Product product, AutoSearch autoSearch) throws Exception {
+        String autoSearchId = "id";
+
+        addAuthUser(autoSearch.owner().id());
+        SearchRequestCommand requestSearch = SearchRequestCommand.builder().ids(autoSearch.products()).build();
+        SearchResponseCommand responseSearch = new SearchResponseCommand(List.of(product));
+
+        when(autoSearchQueryPort.findById(autoSearchId)).thenReturn(autoSearch);
+        when(searchPort.search(requestSearch)).thenReturn(responseSearch);
+
+        String content = mockMvc.perform(get("/auto-search/{id}/products", autoSearchId)
+                        .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        AutoSearchProductsResponse response = objectMapper.readValue(content, AutoSearchProductsResponse.class);
+        assertThat(response).isNotNull();
+        assertThat(response.data()).isNotNull();
+        assertThat(response.data().size()).isEqualTo(0);
 
         verify(autoSearchQueryPort).findById(autoSearchId);
         verify(searchPort).search(requestSearch);
@@ -139,6 +176,32 @@ public class AutoSearchProductControllerIntegrationTest {
 
         verify(autoSearchQueryPort).findById(autoSearchId);
         verifyNoInteractions(searchPort);
+    }
+
+    static Stream<Arguments> autoSearchProvider() {
+        Product product1 =  ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch1 = AutoSearchDataBuilder.withAllFields().address(null).minPrice(null).maxPrice(null).build();
+
+        Product product2 =  ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch2 = AutoSearchDataBuilder.withAllFields().categoryId(product2.categoryId()).minPrice(null).maxPrice(null).build();
+
+        Product product3 =  ProductDataBuilder.withAllFields().price(BigDecimal.ONE).build();
+        AutoSearch autoSearch3 = AutoSearchDataBuilder.withAllFields().categoryId(product3.categoryId()).address(product3.address()).minPrice(BigDecimal.TEN).maxPrice(BigDecimal.valueOf(100)).build();
+
+        return Stream.of(
+                Arguments.of(
+                        product1,
+                        autoSearch1
+                ),
+                Arguments.of(
+                        product2,
+                        autoSearch2
+                ),
+                Arguments.of(
+                        product3,
+                        autoSearch3
+                )
+        );
     }
 
     private void addAuthUser(String id) {

@@ -1,6 +1,7 @@
 package com.vendo.auto_search_service.domain.product;
 
 import com.vendo.auto_search_service.shared.Address;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Builder
 public record Product(
         String id,
         String title,

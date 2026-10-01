@@ -43,7 +43,7 @@ public class AutoSearchMatchingServiceTest {
     void match_shouldMatchInitProductsByRequest() {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
         User user = UserDataBuilder.withAllFields().build();
-        Product product = ProductDataBuilder.withAllFields();
+        Product product = ProductDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));

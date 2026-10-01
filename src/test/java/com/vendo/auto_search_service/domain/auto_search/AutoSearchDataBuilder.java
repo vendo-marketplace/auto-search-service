@@ -18,7 +18,7 @@ public class AutoSearchDataBuilder {
                 .id("auto-search-id")
                 .owner(Owner.from("user-id", "user-email"))
                 .categoryId("category-id")
-                .minPrice(BigDecimal.TEN)
+                .minPrice(BigDecimal.ZERO)
                 .maxPrice(BigDecimal.valueOf(100))
                 .address(address)
                 .status(SearchStatus.ACTIVE)

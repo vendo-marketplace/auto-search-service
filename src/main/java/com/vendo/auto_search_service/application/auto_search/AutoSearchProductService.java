@@ -73,7 +73,10 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
             return false;
         }
 
-        return autoSearch.minPrice().compareTo(product.price()) <= 0
-                && autoSearch.maxPrice().compareTo(product.price()) >= 0;
+        if (ObjectUtils.isNotNull(autoSearch.minPrice()) && autoSearch.minPrice().compareTo(product.price()) > 0) {
+            return false;
+        }
+
+        return ObjectUtils.isNull(autoSearch.maxPrice()) || autoSearch.maxPrice().compareTo(product.price()) >= 1;
     }
 }

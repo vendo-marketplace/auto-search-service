@@ -10,20 +10,18 @@ import java.util.UUID;
 
 public class ProductDataBuilder {
 
-    public static Product withAllFields() {
-        return new Product(
-                String.valueOf(UUID.randomUUID()),
-                "title",
-                1,
-                BigDecimal.ONE,
-                new Address("city"),
-                String.valueOf(UUID.randomUUID()),
-                String.valueOf(UUID.randomUUID()),
-                true,
-                true,
-                List.of(),
-                Instant.now()
-        );
+    public static Product.ProductBuilder withAllFields() {
+        return Product.builder()
+                .id(String.valueOf(UUID.randomUUID()))
+                .title("title")
+                .price(BigDecimal.ONE)
+                .address(new Address("city"))
+                .categoryId(String.valueOf(UUID.randomUUID()))
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .active(true)
+                .isNew(true)
+                .images(List.of())
+                .createdAt(Instant.now());
     }
 
 }
