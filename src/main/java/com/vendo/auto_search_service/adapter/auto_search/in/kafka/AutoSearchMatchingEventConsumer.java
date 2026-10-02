@@ -16,7 +16,7 @@ public class AutoSearchMatchingEventConsumer {
 
     @KafkaListener(
             topics = "${kafka.events.auto-search.matching-event.topic}",
-            groupId = "${kafka.events.auto-search.matching-event.groupId}",
+            groupId = "auto-search-matching-group",
             properties = {"auto.offset.reset: ${kafka.events.auto-search.matching-event.properties.auto-offset-reset}"},
             containerFactory = "${kafka.events.auto-search.matching-event.container-factory}"
     )
