@@ -4,6 +4,7 @@ import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
+import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchLimitExceededException;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.auto_search_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.auto_search_service.domain.category.exception.CategoryTypeException;
@@ -125,6 +126,34 @@ class AutoSearchCommandServiceTest {
     }
 
     @Test
+    void create_shouldSave_whenActiveRequestsBelowLimit() {
+        User authUser = UserDataBuilder.withAllFields().build();
+        AutoSearch request = AutoSearchDataBuilder.withAllFields().build();
+
+        when(authUserPort.getAuthUser()).thenReturn(authUser);
+        when(queryPort.countActiveByUserId(authUser.id())).thenReturn((long) AutoSearch.MAX_ACTIVE_REQUESTS - 1);
+
+        commandService.create(request);
+
+        verify(commandPort).save(any(AutoSearch.class));
+    }
+
+    @Test
+    void create_shouldThrow_whenActiveRequestsLimitReached() {
+        User authUser = UserDataBuilder.withAllFields().build();
+        AutoSearch request = AutoSearchDataBuilder.withAllFields().build();
+
+        when(authUserPort.getAuthUser()).thenReturn(authUser);
+        when(queryPort.countActiveByUserId(authUser.id())).thenReturn((long) AutoSearch.MAX_ACTIVE_REQUESTS);
+
+        assertThatThrownBy(() -> commandService.create(request))
+                .isInstanceOf(AutoSearchLimitExceededException.class);
+
+        verify(commandPort, never()).save(any());
+        verifyNoInteractions(autoSearchEventSenderPort);
+    }
+
+    @Test
     void create_shouldPropagateCategoryNotFound() {
         AutoSearch request = AutoSearchDataBuilder.withAllFields().build();
 
@@ -186,6 +215,46 @@ class AutoSearchCommandServiceTest {
 
         commandService.update(existing.id(), update);
 
+        verify(commandPort).update(existing.id(), update);
+    }
+
+    @Test
+    void update_shouldThrow_whenReactivatingAndActiveRequestsLimitReached() {
+        AutoSearch existing = AutoSearchDataBuilder.withAllFields().status(SearchStatus.CANCELLED).build();
+        AutoSearch update = AutoSearchDataBuilder.withAllFields().status(SearchStatus.ACTIVE).build();
+
+        when(queryPort.findById(existing.id())).thenReturn(existing);
+        when(queryPort.countActiveByUserId(existing.owner().id())).thenReturn((long) AutoSearch.MAX_ACTIVE_REQUESTS);
+
+        assertThatThrownBy(() -> commandService.update(existing.id(), update))
+                .isInstanceOf(AutoSearchLimitExceededException.class);
+
+        verify(commandPort, never()).update(anyString(), any());
+    }
+
+    @Test
+    void update_shouldUpdate_whenReactivatingAndActiveRequestsBelowLimit() {
+        AutoSearch existing = AutoSearchDataBuilder.withAllFields().status(SearchStatus.CANCELLED).build();
+        AutoSearch update = AutoSearchDataBuilder.withAllFields().status(SearchStatus.ACTIVE).build();
+
+        when(queryPort.findById(existing.id())).thenReturn(existing);
+        when(queryPort.countActiveByUserId(existing.owner().id())).thenReturn((long) AutoSearch.MAX_ACTIVE_REQUESTS - 1);
+
+        commandService.update(existing.id(), update);
+
+        verify(commandPort).update(existing.id(), update);
+    }
+
+    @Test
+    void update_shouldSkipLimitValidation_whenAlreadyActive() {
+        AutoSearch existing = AutoSearchDataBuilder.withAllFields().status(SearchStatus.ACTIVE).build();
+        AutoSearch update = AutoSearchDataBuilder.withAllFields().status(SearchStatus.ACTIVE).build();
+
+        when(queryPort.findById(existing.id())).thenReturn(existing);
+
+        commandService.update(existing.id(), update);
+
+        verify(queryPort, never()).countActiveByUserId(anyString());
         verify(commandPort).update(existing.id(), update);
     }
 

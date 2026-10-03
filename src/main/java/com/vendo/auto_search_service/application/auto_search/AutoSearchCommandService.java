@@ -2,6 +2,7 @@ package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
 import com.vendo.auto_search_service.domain.category.Category;
 import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.domain.user.User;
@@ -39,6 +40,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         User authUser = authUserPort.getAuthUser();
+        AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(authUser.id()));
+
         AutoSearch toNew = autoSearch.toNew(Owner.from(authUser.id(), authUser.email()), resolveExpiration(autoSearch.expirationDate()));
 
         String savedId = commandPort.save(toNew);
@@ -47,9 +50,10 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     @Override
     public void update(String id, AutoSearch autoSearch) {
-        Owner owner = queryPort.findById(id).owner();
-        authUserPort.validateAuthOwner(owner.id());
+        AutoSearch existing = queryPort.findById(id);
+        authUserPort.validateAuthOwner(existing.owner().id());
 
+        validateIfReactivated(existing, autoSearch.status());
         validateIfChanged(autoSearch.categoryId());
         validateIfChanged(autoSearch.expirationDate());
 
@@ -61,6 +65,12 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         Owner owner = queryPort.findById(id).owner();
         authUserPort.validateAuthOwner(owner.id());
         commandPort.delete(id);
+    }
+
+    private void validateIfReactivated(AutoSearch existing, SearchStatus status) {
+        if (status == SearchStatus.ACTIVE && existing.status() != SearchStatus.ACTIVE) {
+            AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(existing.owner().id()));
+        }
     }
 
     private void validateIfChanged(String categoryId) {

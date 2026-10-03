@@ -4,6 +4,7 @@ import com.vendo.auto_search_service.adapter.auto_search.out.mapper.AutoSearchMa
 import com.vendo.auto_search_service.application.auto_search.command.FindAllRequest;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,11 @@ class AutoSearchQueryAdapter implements AutoSearchQueryPort {
     public List<AutoSearch> findByUserId(String userId) {
         List<MongoAutoSearch> entities = repository.findAllByOwner_Id(userId);
         return mapper.toAutoSearches(entities);
+    }
+
+    @Override
+    public long countActiveByUserId(String userId) {
+        return repository.countByOwner_IdAndStatus(userId, SearchStatus.ACTIVE);
     }
 
     @Override

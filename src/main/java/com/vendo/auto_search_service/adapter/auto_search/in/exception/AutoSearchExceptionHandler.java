@@ -1,5 +1,6 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.exception;
 
+import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchLimitExceededException;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.security_lib.exception.ExceptionResponse;
@@ -32,5 +33,16 @@ class AutoSearchExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(AutoSearchLimitExceededException.class)
+    ResponseEntity<ExceptionResponse> handleAutoSearchLimitExceededException(AutoSearchLimitExceededException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
     }
 }

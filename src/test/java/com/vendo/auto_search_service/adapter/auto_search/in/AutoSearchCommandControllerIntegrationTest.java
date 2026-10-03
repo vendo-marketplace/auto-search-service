@@ -3,6 +3,7 @@ package com.vendo.auto_search_service.adapter.auto_search.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.auto_search_service.adapter.auto_search.in.dto.*;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
+import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchLimitExceededException;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.auto_search_service.domain.category.exception.CategoryNotFoundException;
@@ -167,6 +168,26 @@ public class AutoSearchCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors()).containsKey("priceRange");
 
             verifyNoInteractions(autoSearchCommandUseCase);
+        }
+
+        @Test
+        void create_shouldReturnConflict_whenActiveRequestsLimitReached() throws Exception {
+            CreateAutoSearchRequest request = CreateAutoSearchRequestDataBuilder.withAllFields().build();
+
+            doThrow(new AutoSearchLimitExceededException("You can have at most 3 active auto search requests."))
+                    .when(autoSearchCommandUseCase).create(any(AutoSearch.class));
+
+            String content = mockMvc.perform(post("/auto-search")
+                            .with(SecurityMockMvcRequestPostProcessors.securityContext(securityContext))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isConflict())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("You can have at most 3 active auto search requests.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/auto-search");
         }
 
         @Test
