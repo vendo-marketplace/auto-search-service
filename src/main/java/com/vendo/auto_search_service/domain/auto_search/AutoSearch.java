@@ -1,5 +1,6 @@
 package com.vendo.auto_search_service.domain.auto_search;
 
+import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchLimitExceededException;
 import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirationDateException;
 import com.vendo.auto_search_service.shared.Address;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
@@ -31,6 +32,16 @@ public record AutoSearch(
         Instant createdAt,
         Instant updatedAt
 ) {
+
+    public static final int MAX_ACTIVE_REQUESTS = 3;
+
+    public static void validateActiveRequestsLimit(long activeRequests) {
+        if (activeRequests >= MAX_ACTIVE_REQUESTS) {
+            throw new AutoSearchLimitExceededException(
+                    "You can have at most " + MAX_ACTIVE_REQUESTS + " active auto search requests."
+            );
+        }
+    }
 
     public static void validateExpirationDate(LocalDateTime expirationDate, int minDays, int maxDays) {
         LocalDate today = LocalDate.now(), expirationLocalDate = expirationDate.toLocalDate();
