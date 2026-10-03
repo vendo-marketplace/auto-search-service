@@ -20,7 +20,7 @@ public class ProductDataBuilder {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .active(true)
                 .isNew(true)
-                .images(List.of())
+                .imageKeys(List.of())
                 .createdAt(Instant.now());
     }
 

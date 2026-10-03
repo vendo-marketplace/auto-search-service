@@ -23,7 +23,7 @@ public record Product(
         Boolean isNew,
         Boolean active,
 
-        List<String> images,
+        List<String> imageKeys,
 
         Instant createdAt
 
