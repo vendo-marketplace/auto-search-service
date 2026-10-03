@@ -40,17 +40,17 @@ public class AutoSearchMatchingServiceTest {
     private AutoSearchEventSenderPort eventSenderPort;
 
     @Test
-    void match_shouldMatchProductsByRequest() {
+    void match_shouldMatchInitProductsByRequest() {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
         User user = UserDataBuilder.withAllFields().build();
-        Product product = ProductDataBuilder.withAllFields();
+        Product product = ProductDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
         doNothing().when(autoSearchCommandPort).update(eq(autoSearch.id()), any());
         doNothing().when(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
 
-        service.match(autoSearch.id(), user.email());
+        service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
         ArgumentCaptor<AutoSearch> autoSearchCaptor = ArgumentCaptor.forClass(AutoSearch.class);
@@ -62,7 +62,7 @@ public class AutoSearchMatchingServiceTest {
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
-        assertThat(requestCommandValue.address()).isEqualTo(autoSearch.address());
+        assertThat(requestCommandValue.addressFilter()).isEqualTo(autoSearch.address());
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
@@ -74,14 +74,14 @@ public class AutoSearchMatchingServiceTest {
     }
 
     @Test
-    void match_shouldNotUpdateAndSentEvent_whenNoProductsFound() {
+    void match_Init_shouldNotUpdateAndSentEvent_whenNoProductsFound() {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
         User user = UserDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
 
-        service.match(autoSearch.id(), user.email());
+        service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
 
@@ -92,7 +92,7 @@ public class AutoSearchMatchingServiceTest {
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
-        assertThat(requestCommandValue.address()).isEqualTo(autoSearch.address());
+        assertThat(requestCommandValue.addressFilter()).isEqualTo(autoSearch.address());
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());

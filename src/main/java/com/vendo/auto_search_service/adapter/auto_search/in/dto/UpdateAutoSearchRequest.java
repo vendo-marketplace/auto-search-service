@@ -1,5 +1,6 @@
 package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 
+import com.vendo.auto_search_service.shared.Address;
 import jakarta.validation.Valid;
 import lombok.Builder;
 
@@ -13,10 +14,8 @@ public record UpdateAutoSearchRequest(
         @Valid
         PriceRangeFilter priceRange,
 
-        String address,
-
+        Address address,
         UpdateSearchStatus status,
-
         LocalDateTime expirationDate
 
 ) {

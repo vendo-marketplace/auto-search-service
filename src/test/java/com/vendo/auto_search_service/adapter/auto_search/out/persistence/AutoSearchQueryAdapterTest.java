@@ -4,6 +4,7 @@ import com.vendo.auto_search_service.adapter.auto_search.out.mapper.AutoSearchMa
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
 import com.vendo.auto_search_service.domain.auto_search.exception.AutoSearchNotFoundException;
+import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,15 +33,16 @@ class AutoSearchQueryAdapterTest {
     @Test
     void findByUserId_shouldReturnMappedRequests() {
         String userId = "user-id";
-        MongoAutoSearch entity = MongoAutoSearch.builder().id("id").userId(userId).build();
-        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().id("id").userId(userId).build();
+        Owner owner = Owner.from(userId, "user@example.com");
+        MongoAutoSearch entity = MongoAutoSearch.builder().id("id").owner(owner).build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().id("id").owner(owner).build();
 
-        when(repository.findAllByUserId(userId)).thenReturn(List.of(entity));
+        when(repository.findAllByOwner_Id(userId)).thenReturn(List.of(entity));
         when(mapper.toAutoSearches(List.of(entity))).thenReturn(List.of(autoSearch));
 
         assertThat(queryAdapter.findByUserId(userId)).containsExactly(autoSearch);
 
-        verify(repository).findAllByUserId(userId);
+        verify(repository).findAllByOwner_Id(userId);
         verify(mapper).toAutoSearches(List.of(entity));
     }
 

@@ -6,4 +6,6 @@ public interface AutoSearchEventSenderPort {
 
     void sendRequestReady(String id, String email);
 
+    void sendRequestNewProduct(String id, String email);
+
 }
