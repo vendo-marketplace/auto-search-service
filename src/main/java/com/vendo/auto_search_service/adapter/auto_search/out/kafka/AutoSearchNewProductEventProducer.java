@@ -18,7 +18,7 @@ public class AutoSearchNewProductEventProducer {
     private final KafkaTemplate<String, AutoSearchNewProductEvent> kafkaTemplate;
 
     public void send(AutoSearchNewProductEvent event) {
-        kafkaTemplate.send(topic, event);
+        kafkaTemplate.send(topic, event).join();
         log.info("Sent event for auto search new product: {}.", event);
     }
 

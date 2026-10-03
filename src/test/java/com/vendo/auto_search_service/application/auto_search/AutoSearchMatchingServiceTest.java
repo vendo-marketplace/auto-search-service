@@ -15,13 +15,17 @@ import com.vendo.auto_search_service.port.search.SearchPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +63,7 @@ public class AutoSearchMatchingServiceTest {
         verify(searchPort).search(searchCaptor.capture());
         verify(autoSearchCommandPort).update(eq(autoSearch.id()), autoSearchCaptor.capture());
         verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
+        verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
@@ -96,5 +101,96 @@ public class AutoSearchMatchingServiceTest {
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
+    }
+
+    @Test
+    void matchInit_shouldNotStoreNotifiedProducts_whenNotificationFails() {
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        User user = UserDataBuilder.withAllFields().build();
+        Product product = ProductDataBuilder.withAllFields().build();
+
+        when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
+        doThrow(new RuntimeException("Kafka is unavailable."))
+                .when(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
+
+        assertThatThrownBy(() -> service.matchInit(autoSearch.id(), user.email()))
+                .isInstanceOf(RuntimeException.class);
+
+        verify(autoSearchCommandPort, never()).addNotifiedProducts(anyString(), any());
+    }
+
+    @Test
+    void matchNew_shouldNotifyAndStoreProduct_whenNotNotifiedYet() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        InOrder inOrder = inOrder(autoSearchCommandPort, eventSenderPort);
+        inOrder.verify(autoSearchCommandPort).addProducts(autoSearch.id(), Set.of(product.id()));
+        inOrder.verify(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+        inOrder.verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
+    }
+
+    @Test
+    void matchNew_shouldNotNotifyAgain_whenProductAlreadyNotified() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        verifyNoInteractions(autoSearchCommandPort, eventSenderPort);
+    }
+
+    @Test
+    void matchNew_shouldNotifyOnce_whenSameProductEventReceivedTwice() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch notNotified = AutoSearchDataBuilder.withAllFields().build();
+        AutoSearch notified = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(notNotified), List.of(notified));
+
+        service.matchNew(product);
+        service.matchNew(product);
+
+        verify(eventSenderPort, times(1)).sendRequestNewProduct(notNotified.id(), notNotified.owner().email());
+        verify(autoSearchCommandPort, times(1)).addNotifiedProducts(notNotified.id(), Set.of(product.id()));
+    }
+
+    @Test
+    void matchNew_shouldNotStoreNotifiedProduct_whenNotificationFails() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+        doThrow(new RuntimeException("Kafka is unavailable."))
+                .when(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+
+        assertThatThrownBy(() -> service.matchNew(product))
+                .isInstanceOf(RuntimeException.class);
+
+        verify(autoSearchCommandPort, never()).addNotifiedProducts(anyString(), any());
+    }
+
+    @Test
+    void matchNew_shouldRetryNotification_whenPreviousAttemptFailed() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+        doThrow(new RuntimeException("Kafka is unavailable."))
+                .doNothing()
+                .when(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+
+        assertThatThrownBy(() -> service.matchNew(product)).isInstanceOf(RuntimeException.class);
+        service.matchNew(product);
+
+        verify(eventSenderPort, times(2)).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+        verify(autoSearchCommandPort, times(1)).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
     }
 }
