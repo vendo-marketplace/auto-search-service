@@ -18,7 +18,7 @@ public class AutoSearchReadyEventProducer {
     private final KafkaTemplate<String, AutoSearchReadyEvent> kafkaTemplate;
 
     public void send(AutoSearchReadyEvent event) {
-        kafkaTemplate.send(topic, event);
+        kafkaTemplate.send(topic, event).join();
         log.info("Sent event for auto search ready: {}.", event);
     }
 

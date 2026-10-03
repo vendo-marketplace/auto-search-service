@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -40,10 +41,11 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         SearchResponseCommand response = searchPort.search(buildSearchRequest(autoSearch));
         if (CollectionUtils.isEmpty(response.data())) return;
 
-        AutoSearch update = AutoSearch.builder().products(Product.getProductIds(response.data())).build();
-        autoSearchCommandPort.update(id, update);
+        Set<String> productIds = Product.getProductIds(response.data());
+        autoSearchCommandPort.update(id, AutoSearch.builder().products(productIds).build());
 
         eventSenderPort.sendRequestReady(id, email);
+        autoSearchCommandPort.addNotifiedProducts(id, productIds);
     }
 
     @Override
@@ -59,8 +61,11 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     }
 
     private void processEntity(String productId, AutoSearch autoSearch) {
-        autoSearchCommandPort.update(autoSearch.id(), AutoSearch.builder().products(autoSearch.collectProducts(productId)).build());
+        if (autoSearch.isNotified(productId)) return;
+
+        autoSearchCommandPort.addProducts(autoSearch.id(), Set.of(productId));
         eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+        autoSearchCommandPort.addNotifiedProducts(autoSearch.id(), Set.of(productId));
     }
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
