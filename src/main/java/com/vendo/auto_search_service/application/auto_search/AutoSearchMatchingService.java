@@ -31,7 +31,7 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     private final AutoSearchCommandPort autoSearchCommandPort;
     private final AutoSearchEventSenderPort eventSenderPort;
 
-    private static final int MAX_PAGE_SIZE = 100, FIRST_PAGE = 0;
+    private static final int MAX_PAGE_SIZE = 100, FIRST_PAGE = 0, MAX_NOTIFIED_PRODUCTS = 5;
 
     @Override
     public void matchInit(String id, String email) {
@@ -43,7 +43,7 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         AutoSearch update = AutoSearch.builder().products(Product.getProductIds(response.data())).build();
         autoSearchCommandPort.update(id, update);
 
-        eventSenderPort.sendRequestReady(id, email);
+        eventSenderPort.sendRequestReady(id, email, response.data().stream().limit(MAX_NOTIFIED_PRODUCTS).toList());
     }
 
     @Override
@@ -53,14 +53,14 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
-            entities.parallelStream().forEach(autoSearch -> processEntity(product.id(), autoSearch));
+            entities.parallelStream().forEach(autoSearch -> processEntity(product, autoSearch));
             if (entities.size() < MAX_PAGE_SIZE) break;
         }
     }
 
-    private void processEntity(String productId, AutoSearch autoSearch) {
-        autoSearchCommandPort.update(autoSearch.id(), AutoSearch.builder().products(autoSearch.collectProducts(productId)).build());
-        eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+    private void processEntity(Product product, AutoSearch autoSearch) {
+        autoSearchCommandPort.update(autoSearch.id(), AutoSearch.builder().products(autoSearch.collectProducts(product.id())).build());
+        eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email(), List.of(product));
     }
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {

@@ -19,7 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -48,7 +50,6 @@ public class AutoSearchMatchingServiceTest {
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
         doNothing().when(autoSearchCommandPort).update(eq(autoSearch.id()), any());
-        doNothing().when(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
 
         service.matchInit(autoSearch.id(), user.email());
 
@@ -58,7 +59,7 @@ public class AutoSearchMatchingServiceTest {
         verify(autoSearchQueryPort).findById(autoSearch.id());
         verify(searchPort).search(searchCaptor.capture());
         verify(autoSearchCommandPort).update(eq(autoSearch.id()), autoSearchCaptor.capture());
-        verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
+        verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email(), List.of(product));
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
@@ -96,5 +97,36 @@ public class AutoSearchMatchingServiceTest {
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
+    }
+
+    @Test
+    void matchInit_shouldSendOnlyTopProducts_whenMoreThanLimitFound() {
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        User user = UserDataBuilder.withAllFields().build();
+        List<Product> products = Stream.generate(() -> ProductDataBuilder.withAllFields().build()).limit(7).toList();
+
+        when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(products));
+
+        service.matchInit(autoSearch.id(), user.email());
+
+        ArgumentCaptor<AutoSearch> autoSearchCaptor = ArgumentCaptor.forClass(AutoSearch.class);
+        verify(autoSearchCommandPort).update(eq(autoSearch.id()), autoSearchCaptor.capture());
+        verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email(), products.subList(0, 5));
+
+        assertThat(autoSearchCaptor.getValue().products().size()).isEqualTo(7);
+    }
+
+    @Test
+    void matchNew_shouldSendNewProduct_forEachMatchingRequest() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().products(new HashSet<>()).build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        verify(autoSearchCommandPort).update(eq(autoSearch.id()), any(AutoSearch.class));
+        verify(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email(), List.of(product));
     }
 }
