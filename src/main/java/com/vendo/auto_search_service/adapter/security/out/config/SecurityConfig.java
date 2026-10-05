@@ -1,7 +1,7 @@
 package com.vendo.auto_search_service.adapter.security.out.config;
 
 import com.vendo.auto_search_service.adapter.security.in.filter.AutoSearchFilter;
-import com.vendo.auto_search_service.infrastructure.props.PathProps;
+import com.vendo.security_starter.path.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
