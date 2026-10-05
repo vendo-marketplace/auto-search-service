@@ -33,12 +33,10 @@ public record AutoSearch(
         Instant updatedAt
 ) {
 
-    public static final int MAX_ACTIVE_REQUESTS = 3;
-
-    public static void validateActiveRequestsLimit(long activeRequests) {
-        if (activeRequests >= MAX_ACTIVE_REQUESTS) {
+    public static void validateActiveRequestsLimit(long activeRequests, int maxActiveRequests) {
+        if (activeRequests >= maxActiveRequests) {
             throw new AutoSearchLimitExceededException(
-                    "You can have at most " + MAX_ACTIVE_REQUESTS + " active auto search requests."
+                    "You can have at most " + maxActiveRequests + " active auto search requests."
             );
         }
     }
