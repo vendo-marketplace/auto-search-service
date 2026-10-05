@@ -67,7 +67,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         commandPort.delete(id);
     }
 
-    private void validateIfReactivated(AutoSearch existing, SearchStatus status) {
+    private void validateReactivation(AutoSearch existing, SearchStatus status) {
         if (status == SearchStatus.ACTIVE && existing.status() != SearchStatus.ACTIVE) {
             AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(existing.owner().id()));
         }
