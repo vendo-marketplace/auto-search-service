@@ -11,5 +11,6 @@ public interface AutoSearchQueryPort {
     List<AutoSearch> findAll(FindAllRequest request, Pageable pageable);
     List<AutoSearch> findByUserId(String userId);
     AutoSearch findById(String id);
+    long countActiveByUserId(String userId);
 
 }

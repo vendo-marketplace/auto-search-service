@@ -2,9 +2,11 @@ package com.vendo.auto_search_service.application.auto_search;
 
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
+import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
 import com.vendo.auto_search_service.domain.category.Category;
 import com.vendo.auto_search_service.domain.category.CategoryType;
 import com.vendo.auto_search_service.domain.user.User;
+import com.vendo.auto_search_service.infrastructure.props.ActiveRequestsProps;
 import com.vendo.auto_search_service.infrastructure.props.ExpirationDateProps;
 import com.vendo.auto_search_service.port.auth.AuthUserPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
@@ -32,6 +34,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
     private final CategoryQueryPort categoryQueryPort;
 
     private final ExpirationDateProps expirationProps;
+    private final ActiveRequestsProps activeRequestsProps;
 
     @Override
     public void create(AutoSearch autoSearch) {
@@ -39,6 +42,8 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         category.throwIfNotDesiredType(CategoryType.CHILD);
 
         User authUser = authUserPort.getAuthUser();
+        AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(authUser.id()), activeRequestsProps.getMax());
+
         AutoSearch toNew = autoSearch.toNew(Owner.from(authUser.id(), authUser.email()), resolveExpiration(autoSearch.expirationDate()));
 
         String savedId = commandPort.save(toNew);
@@ -47,11 +52,12 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
 
     @Override
     public void update(String id, AutoSearch autoSearch) {
-        Owner owner = queryPort.findById(id).owner();
-        authUserPort.validateAuthOwner(owner.id());
+        AutoSearch existing = queryPort.findById(id);
+        authUserPort.validateAuthOwner(existing.owner().id());
 
-        validateIfChanged(autoSearch.categoryId());
-        validateIfChanged(autoSearch.expirationDate());
+        validateReactivation(existing, autoSearch.status());
+        validateCategory(autoSearch.categoryId());
+        validateExpirationDate(autoSearch.expirationDate());
 
         commandPort.update(id, autoSearch);
     }
@@ -63,14 +69,20 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         commandPort.delete(id);
     }
 
-    private void validateIfChanged(String categoryId) {
+    private void validateReactivation(AutoSearch existing, SearchStatus status) {
+        if (status == SearchStatus.ACTIVE && existing.status() != SearchStatus.ACTIVE) {
+            AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(existing.owner().id()), activeRequestsProps.getMax());
+        }
+    }
+
+    private void validateCategory(String categoryId) {
         if (!StringUtils.isEmpty(categoryId)) {
             Category category = categoryQueryPort.findById(categoryId);
             category.throwIfNotDesiredType(CategoryType.CHILD);
         }
     }
 
-    private void validateIfChanged(LocalDateTime expirationDate) {
+    private void validateExpirationDate(LocalDateTime expirationDate) {
         if (ObjectUtils.isNotNull(expirationDate)) {
             AutoSearch.validateExpirationDate(expirationDate, expirationProps.getMinHours(), expirationProps.getMaxDays());
         }
@@ -81,7 +93,7 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
             return LocalDateTime.now().plusDays(expirationProps.getMaxDays());
         }
 
-        validateIfChanged(expirationDate);
+        validateExpirationDate(expirationDate);
         return expirationDate;
     }
 }

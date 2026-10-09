@@ -15,6 +15,8 @@ public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoS
 
     List<MongoAutoSearch> findAllByOwner_Id(String ownerId);
 
+    long countByOwner_IdAndStatus(String ownerId, SearchStatus status);
+
     @Query("{ 'status': ?0, 'expirationDate': { '$lt': ?1 } }")
     @Update("{ '$set': { 'status': 'EXPIRED', 'updatedAt': ?2 } }")
     long expireOutdatedRequests(SearchStatus currentStatus, LocalDateTime expirationDateBefore, Instant updatedAt);

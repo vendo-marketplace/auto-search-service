@@ -22,6 +22,10 @@ security:
       key: 63c43ae4e049015bcf8d7e59bcce8692e15ed390b68d75f60f218a118dfeaf89a52936c89bedda73b8689c5495808b25
       expiration-time: 60000
 
+auto-search:
+  active-requests:
+    max: 3
+
 endpoints:
   unauthenticated:
     general:
