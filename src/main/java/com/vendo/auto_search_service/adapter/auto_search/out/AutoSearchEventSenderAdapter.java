@@ -31,11 +31,11 @@ public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
     @Override
     public void sendRequestReady(String id, String email, List<Product> products) {
-        readyEventProducer.send(AutoSearchReadyEvent.from(id, email, eventProductMapper.toAutoSearchProductEvents(products)));
+        readyEventProducer.send(false, AutoSearchReadyEvent.from(id, email, eventProductMapper.toAutoSearchProductEvents(products)));
     }
 
     @Override
     public void sendRequestNewProduct(String id, String email, List<Product> products) {
-        newProductEventProducer.send(AutoSearchNewProductEvent.from(id, email, eventProductMapper.toAutoSearchProductEvents(products)));
+        newProductEventProducer.send(false, AutoSearchNewProductEvent.from(id, email, eventProductMapper.toAutoSearchProductEvents(products)));
     }
 }
