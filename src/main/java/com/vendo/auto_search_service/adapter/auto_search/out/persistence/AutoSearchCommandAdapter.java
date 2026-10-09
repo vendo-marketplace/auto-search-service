@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +30,16 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
         MongoAutoSearch entity = findOrThrow(id);
         mapper.updateEntity(entity, autoSearch);
         repository.save(entity);
+    }
+
+    @Override
+    public void addProducts(String id, Set<String> productIds) {
+        repository.addProducts(id, productIds);
+    }
+
+    @Override
+    public void addNotifiedProducts(String id, Set<String> productIds) {
+        repository.addNotifiedProductIds(id, productIds);
     }
 
     @Override

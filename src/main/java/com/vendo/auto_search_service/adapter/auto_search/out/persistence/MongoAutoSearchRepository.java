@@ -9,6 +9,7 @@ import org.springframework.data.repository.ListPagingAndSortingRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoSearch, String>, ListPagingAndSortingRepository<MongoAutoSearch, String> {
 
@@ -17,4 +18,12 @@ public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoS
     @Query("{ 'status': ?0, 'expirationDate': { '$lt': ?1 } }")
     @Update("{ '$set': { 'status': 'EXPIRED', 'updatedAt': ?2 } }")
     long expireOutdatedRequests(SearchStatus currentStatus, LocalDateTime expirationDateBefore, Instant updatedAt);
+
+    @Query("{ '_id': ?0 }")
+    @Update("{ '$addToSet': { 'products': { '$each': ?1 } } }")
+    void addProducts(String id, Set<String> productIds);
+
+    @Query("{ '_id': ?0 }")
+    @Update("{ '$addToSet': { 'notifiedProductIds': { '$each': ?1 } } }")
+    void addNotifiedProductIds(String id, Set<String> productIds);
 }

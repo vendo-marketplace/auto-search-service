@@ -15,11 +15,13 @@ import com.vendo.auto_search_service.port.search.SearchPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -59,6 +61,7 @@ public class AutoSearchMatchingServiceTest {
         verify(searchPort).search(searchCaptor.capture());
         verify(autoSearchCommandPort).update(eq(autoSearch.id()), autoSearchCaptor.capture());
         verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
+        verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
@@ -96,5 +99,47 @@ public class AutoSearchMatchingServiceTest {
         assertThat(requestCommandValue.priceRangeFilter()).isNotNull();
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
+    }
+
+    @Test
+    void matchNew_shouldNotifyAndStoreProduct_whenNotNotifiedYet() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        InOrder inOrder = inOrder(autoSearchCommandPort, eventSenderPort);
+        inOrder.verify(autoSearchCommandPort).addProducts(autoSearch.id(), Set.of(product.id()));
+        inOrder.verify(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+        inOrder.verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
+    }
+
+    @Test
+    void matchNew_shouldNotNotifyAgain_whenProductAlreadyNotified() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        verifyNoInteractions(autoSearchCommandPort, eventSenderPort);
+    }
+
+    @Test
+    void matchNew_shouldNotifyOnce_whenSameProductEventReceivedTwice() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        AutoSearch notNotified = AutoSearchDataBuilder.withAllFields().build();
+        AutoSearch notified = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
+
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(notNotified), List.of(notified));
+
+        service.matchNew(product);
+        service.matchNew(product);
+
+        verify(eventSenderPort, times(1)).sendRequestNewProduct(notNotified.id(), notNotified.owner().email());
+        verify(autoSearchCommandPort, times(1)).addNotifiedProducts(notNotified.id(), Set.of(product.id()));
     }
 }
