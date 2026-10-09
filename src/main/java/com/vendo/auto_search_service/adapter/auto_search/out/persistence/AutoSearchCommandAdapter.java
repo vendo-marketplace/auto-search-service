@@ -7,6 +7,8 @@ import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 class AutoSearchCommandAdapter implements AutoSearchCommandPort {
@@ -25,6 +27,16 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
         MongoAutoSearch entity = findOrThrow(id);
         mapper.updateEntity(entity, autoSearch);
         repository.save(entity);
+    }
+
+    @Override
+    public void addProducts(String id, Set<String> productIds) {
+        repository.addProducts(id, productIds);
+    }
+
+    @Override
+    public void addNotifiedProducts(String id, Set<String> productIds) {
+        repository.addNotifiedProductIds(id, productIds);
     }
 
     @Override
