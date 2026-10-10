@@ -38,11 +38,6 @@ class AutoSearchCommandAdapter implements AutoSearchCommandPort {
     }
 
     @Override
-    public void addNotifiedProducts(String id, Set<String> productIds) {
-        repository.addNotifiedProductIds(id, productIds);
-    }
-
-    @Override
     public void delete(String id) {
         MongoAutoSearch entity = findOrThrow(id);
         repository.delete(entity);

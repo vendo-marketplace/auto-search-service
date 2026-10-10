@@ -60,7 +60,7 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
     private void updateWithRelevantProducts(AutoSearch autoSearch, List<Product> products) {
         if (products.size() < autoSearch.products().size()) {
             Set<String> ids = products.stream().map(Product::id).collect(Collectors.toSet());
-            autoSearchCommandPort.update(autoSearch.id(), AutoSearch.builder().products(ids).build());
+            autoSearchCommandPort.addProducts(autoSearch.id(), ids);
         }
     }
 

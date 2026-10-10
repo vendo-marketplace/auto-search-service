@@ -24,7 +24,6 @@ public class AutoSearchDataBuilder {
                 .status(SearchStatus.ACTIVE)
                 .expirationDate(LocalDateTime.now().plusDays(3))
                 .products(Set.of("id1", "id2", "id3"))
-                .notifiedProductIds(Set.of("id1", "id2", "id3"))
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now());
     }

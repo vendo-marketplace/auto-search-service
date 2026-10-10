@@ -42,10 +42,9 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         if (CollectionUtils.isEmpty(response.data())) return;
 
         Set<String> productIds = Product.getProductIds(response.data());
-        autoSearchCommandPort.update(id, AutoSearch.builder().products(productIds).build());
+        autoSearchCommandPort.addProducts(id, productIds);
 
         eventSenderPort.sendRequestReady(id, email);
-        autoSearchCommandPort.addNotifiedProducts(id, productIds);
     }
 
     @Override
@@ -56,16 +55,16 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
             entities.parallelStream().forEach(autoSearch -> processEntity(product.id(), autoSearch));
-            if (entities.size() < MAX_PAGE_SIZE) break;
+
+            if (entities.size() < MAX_PAGE_SIZE) {
+                break;
+            }
         }
     }
 
     private void processEntity(String productId, AutoSearch autoSearch) {
-        if (autoSearch.isNotified(productId)) return;
-
         autoSearchCommandPort.addProducts(autoSearch.id(), Set.of(productId));
         eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
-        autoSearchCommandPort.addNotifiedProducts(autoSearch.id(), Set.of(productId));
     }
 
     private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {

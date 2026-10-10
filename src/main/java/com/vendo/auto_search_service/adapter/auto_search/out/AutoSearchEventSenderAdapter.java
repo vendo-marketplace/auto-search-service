@@ -25,11 +25,11 @@ public class AutoSearchEventSenderAdapter implements AutoSearchEventSenderPort {
 
     @Override
     public void sendRequestReady(String id, String email) {
-        readyEventProducer.send(false, AutoSearchReadyEvent.from(id, email));
+        readyEventProducer.send(AutoSearchReadyEvent.from(id, email));
     }
 
     @Override
     public void sendRequestNewProduct(String id, String email) {
-        newProductEventProducer.send(false, AutoSearchNewProductEvent.from(id, email));
+        newProductEventProducer.send(AutoSearchNewProductEvent.from(id, email));
     }
 }

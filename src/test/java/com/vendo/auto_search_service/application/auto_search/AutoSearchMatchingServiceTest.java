@@ -15,7 +15,6 @@ import com.vendo.auto_search_service.port.search.SearchPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,19 +48,15 @@ public class AutoSearchMatchingServiceTest {
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
         when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
-        doNothing().when(autoSearchCommandPort).update(eq(autoSearch.id()), any());
-        doNothing().when(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
-
         service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
-        ArgumentCaptor<AutoSearch> autoSearchCaptor = ArgumentCaptor.forClass(AutoSearch.class);
+        ArgumentCaptor<Set<String>> productIdsCaptor = ArgumentCaptor.forClass(Set.class);
 
         verify(autoSearchQueryPort).findById(autoSearch.id());
         verify(searchPort).search(searchCaptor.capture());
-        verify(autoSearchCommandPort).update(eq(autoSearch.id()), autoSearchCaptor.capture());
+        verify(autoSearchCommandPort).addProducts(eq(autoSearch.id()), productIdsCaptor.capture());
         verify(eventSenderPort).sendRequestReady(autoSearch.id(), user.email());
-        verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
 
         SearchRequestCommand requestCommandValue = searchCaptor.getValue();
         assertThat(requestCommandValue.categoryId()).isEqualTo(autoSearch.categoryId());
@@ -70,10 +65,7 @@ public class AutoSearchMatchingServiceTest {
         assertThat(requestCommandValue.priceRangeFilter().minPrice()).isEqualTo(autoSearch.minPrice());
         assertThat(requestCommandValue.priceRangeFilter().maxPrice()).isEqualTo(autoSearch.maxPrice());
 
-        AutoSearch autoSearchValue = autoSearchCaptor.getValue();
-        assertThat(autoSearchValue.products()).isNotNull();
-        assertThat(autoSearchValue.products().size()).isEqualTo(1);
-        assertThat(autoSearchValue.products().iterator().next()).isEqualTo(product.id());
+        assertThat(productIdsCaptor.getValue()).containsExactly(product.id());
     }
 
     @Test
@@ -102,44 +94,51 @@ public class AutoSearchMatchingServiceTest {
     }
 
     @Test
-    void matchNew_shouldNotifyAndStoreProduct_whenNotNotifiedYet() {
-        Product product = ProductDataBuilder.withAllFields().build();
-        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+    void matchInit_shouldOmitOptionalFilters_whenAutoSearchHasNoPriceOrCity() {
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields()
+                .minPrice(null)
+                .maxPrice(null)
+                .address(null)
+                .build();
+        when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
 
-        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+        service.matchInit(autoSearch.id(), "user@example.com");
 
-        service.matchNew(product);
-
-        InOrder inOrder = inOrder(autoSearchCommandPort, eventSenderPort);
-        inOrder.verify(autoSearchCommandPort).addProducts(autoSearch.id(), Set.of(product.id()));
-        inOrder.verify(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
-        inOrder.verify(autoSearchCommandPort).addNotifiedProducts(autoSearch.id(), Set.of(product.id()));
-    }
-
-    @Test
-    void matchNew_shouldNotNotifyAgain_whenProductAlreadyNotified() {
-        Product product = ProductDataBuilder.withAllFields().build();
-        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
-
-        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
-
-        service.matchNew(product);
-
+        ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
+        verify(searchPort).search(searchCaptor.capture());
+        assertThat(searchCaptor.getValue().categoryId()).isEqualTo(autoSearch.categoryId());
+        assertThat(searchCaptor.getValue().addressFilter()).isNull();
+        assertThat(searchCaptor.getValue().priceRangeFilter()).isNull();
         verifyNoInteractions(autoSearchCommandPort, eventSenderPort);
     }
 
     @Test
-    void matchNew_shouldNotifyOnce_whenSameProductEventReceivedTwice() {
+    void matchNew_shouldAddProductAndSendEventForMatchingAutoSearches() {
         Product product = ProductDataBuilder.withAllFields().build();
-        AutoSearch notNotified = AutoSearchDataBuilder.withAllFields().build();
-        AutoSearch notified = AutoSearchDataBuilder.withAllFields().notifiedProductIds(Set.of(product.id())).build();
-
-        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(notNotified), List.of(notified));
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
 
         service.matchNew(product);
+
+        verify(autoSearchQueryPort).findAll(any(), eq(org.springframework.data.domain.PageRequest.of(0, 100)));
+        verify(autoSearchCommandPort).addProducts(autoSearch.id(), Set.of(product.id()));
+        verify(eventSenderPort).sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
+    }
+
+    @Test
+    void matchNew_shouldFetchNextPageWhenPageIsFull() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        List<AutoSearch> fullPage = java.util.stream.IntStream.range(0, 100)
+                .mapToObj(i -> AutoSearchDataBuilder.withAllFields().id("auto-search-" + i).build())
+                .toList();
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(fullPage, List.of());
+
         service.matchNew(product);
 
-        verify(eventSenderPort, times(1)).sendRequestNewProduct(notNotified.id(), notNotified.owner().email());
-        verify(autoSearchCommandPort, times(1)).addNotifiedProducts(notNotified.id(), Set.of(product.id()));
+        verify(autoSearchQueryPort).findAll(any(), eq(org.springframework.data.domain.PageRequest.of(0, 100)));
+        verify(autoSearchQueryPort).findAll(any(), eq(org.springframework.data.domain.PageRequest.of(1, 100)));
+        verify(autoSearchCommandPort, times(100)).addProducts(anyString(), eq(Set.of(product.id())));
+        verify(eventSenderPort, times(100)).sendRequestNewProduct(anyString(), anyString());
     }
 }

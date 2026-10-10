@@ -5,7 +5,6 @@ import com.vendo.auto_search_service.domain.auto_search.exception.InvalidExpirat
 import com.vendo.auto_search_service.shared.Address;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.auto_search.type.SearchStatus;
-import com.vendo.core_lib.utils.ObjectUtils;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -28,7 +27,6 @@ public record AutoSearch(
 
         LocalDateTime expirationDate,
         Set<String> products,
-        Set<String> notifiedProductIds,
 
         Instant createdAt,
         Instant updatedAt
@@ -59,11 +57,6 @@ public record AutoSearch(
                 .status(SearchStatus.ACTIVE)
                 .expirationDate(expirationDate)
                 .products(Set.of())
-                .notifiedProductIds(Set.of())
                 .build();
-    }
-
-    public boolean isNotified(String productId) {
-        return ObjectUtils.isNotNull(notifiedProductIds) && notifiedProductIds.contains(productId);
     }
 }

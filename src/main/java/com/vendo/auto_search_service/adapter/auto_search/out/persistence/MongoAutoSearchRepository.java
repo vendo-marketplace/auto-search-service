@@ -25,7 +25,4 @@ public interface MongoAutoSearchRepository extends ListCrudRepository<MongoAutoS
     @Update("{ '$addToSet': { 'products': { '$each': ?1 } } }")
     void addProducts(String id, Set<String> productIds);
 
-    @Query("{ '_id': ?0 }")
-    @Update("{ '$addToSet': { 'notifiedProductIds': { '$each': ?1 } } }")
-    void addNotifiedProductIds(String id, Set<String> productIds);
 }

@@ -42,7 +42,6 @@ public class MongoAutoSearch {
 
     private LocalDateTime expirationDate;
     private Set<String> products;
-    private Set<String> notifiedProductIds;
 
     @CreatedDate
     private Instant createdAt;
