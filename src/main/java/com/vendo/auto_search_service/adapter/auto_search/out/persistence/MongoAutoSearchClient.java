@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -30,30 +31,36 @@ final class MongoAutoSearchClient {
     private static final String categoryIdField = ClassFields.nameOf("categoryId", MongoAutoSearch.class);
 
     Page<MongoAutoSearch> findAllBy(String categoryId, Address address, BigDecimal price, Pageable pageable) {
-        if (StringUtils.isEmpty(categoryId)) throw new IllegalArgumentException("Category is required.");
+        if (StringUtils.isEmpty(categoryId)) {
+            throw new IllegalArgumentException("Category is required.");
+        }
 
-        Query query = new Query(Criteria.where(categoryIdField).is(categoryId));
+        List<Criteria> criteriaList = new ArrayList<>();
 
-        withAddressQuery(query, address);
-        withPriceQuery(query, price);
+        criteriaList.add(Criteria.where(categoryIdField).is(categoryId));
 
+        withAddressQuery(criteriaList, address);
+        withPriceQuery(criteriaList, price);
+
+        Query query = new Query(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         return withPageable(query, pageable);
     }
 
-    private void withAddressQuery(Query query, Address address) {
-        if (!ObjectUtils.isNull(address) && !StringUtils.isEmpty(address.city())) {
+    private void withAddressQuery(List<Criteria> criteriaList, Address address) {
+        if (ObjectUtils.isNotNull(address) && !StringUtils.isEmpty(address.city())) {
 
             String cityFormatted = addressField + Separators.DOT_SEPARATOR + cityField;
+
             Criteria criteria = new Criteria().orOperator(
                     Criteria.where(cityFormatted).is(address.city()),
                     Criteria.where(addressField).isNull()
             );
 
-            query.addCriteria(criteria);
+            criteriaList.add(criteria);
         }
     }
 
-    private void withPriceQuery(Query query, BigDecimal price) {
+    private void withPriceQuery(List<Criteria> criteriaList, BigDecimal price) {
         if (ObjectUtils.isNotNull(price)) {
 
             Criteria minPriceCriteria = new Criteria().orOperator(
@@ -66,14 +73,15 @@ final class MongoAutoSearchClient {
                     Criteria.where(maxPriceField).isNull()
             );
 
-            query.addCriteria(minPriceCriteria.andOperator(maxPriceCriteria));
+            criteriaList.add(
+                    new Criteria().andOperator(minPriceCriteria, maxPriceCriteria)
+            );
         }
     }
 
     private Page<MongoAutoSearch> withPageable(Query query, Pageable pageable) {
-        long total = op.count(query, MongoAutoSearch.class);
         query.with(pageable);
         List<MongoAutoSearch> content = op.find(query, MongoAutoSearch.class);
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable, op.count(query, MongoAutoSearch.class));
     }
 }
