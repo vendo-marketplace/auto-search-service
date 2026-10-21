@@ -6,6 +6,7 @@ import com.vendo.auto_search_service.application.search.command.SearchResponseCo
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
 import com.vendo.auto_search_service.domain.product.Product;
+import com.vendo.auto_search_service.infrastructure.props.MatchingProps;
 import com.vendo.auto_search_service.domain.user.User;
 import com.vendo.auto_search_service.domain.user.UserDataBuilder;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
@@ -39,6 +40,8 @@ public class AutoSearchMatchingServiceTest {
     private AutoSearchCommandPort autoSearchCommandPort;
     @Mock
     private AutoSearchEventSenderPort eventSenderPort;
+    @Mock
+    private MatchingProps matchingProps;
 
     @Test
     void match_shouldMatchInitProductsByRequest() {
@@ -47,7 +50,7 @@ public class AutoSearchMatchingServiceTest {
         Product product = ProductDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product), null));
         service.matchInit(autoSearch.id(), user.email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
@@ -74,7 +77,7 @@ public class AutoSearchMatchingServiceTest {
         User user = UserDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(), null));
 
         service.matchInit(autoSearch.id(), user.email());
 
@@ -101,7 +104,7 @@ public class AutoSearchMatchingServiceTest {
                 .address(null)
                 .build();
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(), null));
 
         service.matchInit(autoSearch.id(), "user@example.com");
 
@@ -117,6 +120,7 @@ public class AutoSearchMatchingServiceTest {
     void matchNew_shouldAddProductAndSendEventForMatchingAutoSearches() {
         Product product = ProductDataBuilder.withAllFields().build();
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        when(matchingProps.getPageSize()).thenReturn(100);
         when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
 
         service.matchNew(product);
@@ -132,6 +136,7 @@ public class AutoSearchMatchingServiceTest {
         List<AutoSearch> fullPage = java.util.stream.IntStream.range(0, 100)
                 .mapToObj(i -> AutoSearchDataBuilder.withAllFields().id("auto-search-" + i).build())
                 .toList();
+        when(matchingProps.getPageSize()).thenReturn(100);
         when(autoSearchQueryPort.findAll(any(), any())).thenReturn(fullPage, List.of());
 
         service.matchNew(product);
