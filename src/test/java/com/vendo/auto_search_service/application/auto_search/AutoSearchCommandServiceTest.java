@@ -234,7 +234,6 @@ class AutoSearchCommandServiceTest {
         commandService.update(existing.id(), update);
 
         verify(authUserPort).validateAuthOwner(existing.owner().id());
-        verify(categoryQueryPort).findById(update.categoryId());
         verify(commandPort).update(existing.id(), update);
     }
 
@@ -314,21 +313,6 @@ class AutoSearchCommandServiceTest {
 
         assertThatThrownBy(() -> commandService.update(existing.id(), update))
                 .isInstanceOf(UserNotOwnerException.class);
-
-        verify(commandPort, never()).update(anyString(), any());
-    }
-
-    @Test
-    void update_shouldPropagateCategoryNotFound() {
-        AutoSearch existing = AutoSearchDataBuilder.withAllFields().build();
-        AutoSearch update = AutoSearchDataBuilder.withAllFields().build();
-
-        when(queryPort.findById(existing.id())).thenReturn(existing);
-        when(categoryQueryPort.findById(update.categoryId()))
-                .thenThrow(new CategoryNotFoundException("Category not found."));
-
-        assertThatThrownBy(() -> commandService.update(existing.id(), update))
-                .isInstanceOf(CategoryNotFoundException.class);
 
         verify(commandPort, never()).update(anyString(), any());
     }

@@ -15,7 +15,6 @@ import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchCommandUseCase;
 import com.vendo.auto_search_service.port.category.CategoryQueryPort;
 import com.vendo.core_lib.utils.ObjectUtils;
-import com.vendo.core_lib.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +55,6 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         authUserPort.validateAuthOwner(existing.owner().id());
 
         validateReactivation(existing, autoSearch.status());
-        validateCategory(autoSearch.categoryId());
         validateExpirationDate(autoSearch.expirationDate());
 
         commandPort.update(id, autoSearch);
@@ -72,13 +70,6 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
     private void validateReactivation(AutoSearch existing, SearchStatus status) {
         if (status == SearchStatus.ACTIVE && existing.status() != SearchStatus.ACTIVE) {
             AutoSearch.validateActiveRequestsLimit(queryPort.countActiveByUserId(existing.owner().id()), activeRequestsProps.getMax());
-        }
-    }
-
-    private void validateCategory(String categoryId) {
-        if (!StringUtils.isEmpty(categoryId)) {
-            Category category = categoryQueryPort.findById(categoryId);
-            category.throwIfNotDesiredType(CategoryType.CHILD);
         }
     }
 

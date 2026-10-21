@@ -17,8 +17,6 @@ public interface DtoAutoSearchMapper {
     @Mapping(target = "maxPrice", source = "priceRange.maxPrice")
     AutoSearch toEntity(CreateAutoSearchRequest request);
 
-    @Mapping(target = "minPrice", source = "priceRange.minPrice")
-    @Mapping(target = "maxPrice", source = "priceRange.maxPrice")
     AutoSearch toEntity(UpdateAutoSearchRequest request);
 
     List<AutoSearchResponse> toResponses(List<AutoSearch> autoSearches);
