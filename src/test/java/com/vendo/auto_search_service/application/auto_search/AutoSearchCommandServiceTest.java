@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -63,7 +64,7 @@ class AutoSearchCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(expirationDateProps.getMinHours()).thenReturn(1);
+        lenient().when(expirationDateProps.getMinDays()).thenReturn(1);
         lenient().when(expirationDateProps.getMaxDays()).thenReturn(7);
         lenient().when(activeRequestsProps.getMax()).thenReturn(MAX_ACTIVE_REQUESTS);
         lenient().when(authUserPort.getAuthUser()).thenReturn(UserDataBuilder.withAllFields().build());
@@ -115,43 +116,20 @@ class AutoSearchCommandServiceTest {
         ArgumentCaptor<AutoSearch> captor = ArgumentCaptor.forClass(AutoSearch.class);
         verify(commandPort).save(captor.capture());
 
-        LocalDateTime expected = LocalDateTime.now().plusDays(7);
-        assertThat(captor.getValue().expirationDate()).isCloseTo(expected, within(5, ChronoUnit.SECONDS));
+        LocalDate expected = LocalDate.now().plusDays(7);
+        assertThat(captor.getValue().expirationDate()).isCloseTo(expected, within(1, ChronoUnit.DAYS));
     }
 
     @Test
     void create_shouldThrow_whenExpirationDateOutOfRange() {
         AutoSearch request = AutoSearchDataBuilder.withAllFields()
-                .expirationDate(LocalDateTime.now().plusDays(30))
+                .expirationDate(LocalDate.now().plusDays(30))
                 .build();
 
         assertThatThrownBy(() -> commandService.create(request))
                 .isInstanceOf(InvalidExpirationDateException.class);
 
         verify(commandPort, never()).save(any());
-    }
-
-    @Test
-    void create_shouldThrow_whenExpirationDateIsLessThanMinHoursAway() {
-        AutoSearch request = AutoSearchDataBuilder.withAllFields()
-                .expirationDate(LocalDateTime.now().plusMinutes(30))
-                .build();
-
-        assertThatThrownBy(() -> commandService.create(request))
-                .isInstanceOf(InvalidExpirationDateException.class);
-
-        verify(commandPort, never()).save(any());
-    }
-
-    @Test
-    void create_shouldSucceed_whenExpirationDateIsJustOverMinHoursAway() {
-        AutoSearch request = AutoSearchDataBuilder.withAllFields()
-                .expirationDate(LocalDateTime.now().plusHours(1).plusSeconds(10))
-                .build();
-
-        commandService.create(request);
-
-        verify(commandPort).save(any());
     }
 
     @Test

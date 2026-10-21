@@ -9,7 +9,7 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Builder(toBuilder = true)
@@ -25,7 +25,7 @@ public record AutoSearch(
 
         SearchStatus status,
 
-        LocalDateTime expirationDate,
+        LocalDate expirationDate,
         Set<String> products,
 
         Instant createdAt,
@@ -40,18 +40,18 @@ public record AutoSearch(
         }
     }
 
-    public static void validateExpirationDate(LocalDateTime expirationDate, int minHours, int maxDays) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime earliest = now.plusHours(minHours), latest = now.plusDays(maxDays);
+    public static void validateExpirationDate(LocalDate expirationDate, int minDays, int maxDays) {
+        LocalDate now = LocalDate.now();
+        LocalDate earliest = now.plusDays(minDays), latest = now.plusDays(maxDays);
 
         if (expirationDate.isBefore(earliest) || expirationDate.isAfter(latest)) {
             throw new InvalidExpirationDateException(
-                    "Expiration date must be at least " + minHours + " hour(s) from now and not later than " + maxDays + " day(s) from now."
+                    "Expiration date must be at least " + minDays + " day(s) from now and not later than " + maxDays + " day(s) from now."
             );
         }
     }
 
-    public AutoSearch toNew(Owner owner, LocalDateTime expirationDate) {
+    public AutoSearch toNew(Owner owner, LocalDate expirationDate) {
         return this.toBuilder()
                 .owner(owner)
                 .status(SearchStatus.ACTIVE)

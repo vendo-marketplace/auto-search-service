@@ -3,7 +3,7 @@ package com.vendo.auto_search_service.adapter.auto_search.in.dto;
 import com.vendo.auto_search_service.shared.Address;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class CreateAutoSearchRequestDataBuilder {
 
@@ -17,6 +17,6 @@ public class CreateAutoSearchRequestDataBuilder {
                         .maxPrice(BigDecimal.valueOf(100))
                         .build())
                 .address(address)
-                .expirationDate(LocalDateTime.now().plusDays(3));
+                .expirationDate(LocalDate.now().plusDays(3));
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "auto-search.expiration")
 public class ExpirationDateProps {
 
-    private int minHours;
+    private int minDays;
     private int maxDays;
 
 }

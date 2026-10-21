@@ -18,6 +18,7 @@ import com.vendo.core_lib.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -73,15 +74,15 @@ class AutoSearchCommandService implements AutoSearchCommandUseCase {
         }
     }
 
-    private void validateExpirationDate(LocalDateTime expirationDate) {
+    private void validateExpirationDate(LocalDate expirationDate) {
         if (ObjectUtils.isNotNull(expirationDate)) {
-            AutoSearch.validateExpirationDate(expirationDate, expirationProps.getMinHours(), expirationProps.getMaxDays());
+            AutoSearch.validateExpirationDate(expirationDate, expirationProps.getMinDays(), expirationProps.getMaxDays());
         }
     }
 
-    private LocalDateTime resolveExpiration(LocalDateTime expirationDate) {
+    private LocalDate resolveExpiration(LocalDate expirationDate) {
         if (ObjectUtils.isNull(expirationDate)) {
-            return LocalDateTime.now().plusDays(expirationProps.getMaxDays());
+            return LocalDate.now().plusDays(expirationProps.getMaxDays());
         }
 
         validateExpirationDate(expirationDate);

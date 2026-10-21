@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Builder
 public record CreateAutoSearchRequest(
@@ -17,7 +17,7 @@ public record CreateAutoSearchRequest(
         PriceRangeFilter priceRange,
 
         Address address,
-        LocalDateTime expirationDate
+        LocalDate expirationDate
 
 ) {
 }
