@@ -39,9 +39,9 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
 
         SearchResponseCommand response = searchPort.search(buildSearchRequest(autoSearch));
-        if (CollectionUtils.isEmpty(response.data())) return;
+        if (CollectionUtils.isEmpty(response.data()) || ObjectUtils.isNull(autoSearch.owner())) return;
 
-        Set<String> productIds = Product.getProductIds(response.data());
+        Set<String> productIds = Product.getExcludedUserProductIds(autoSearch.owner().id(), response.data());
         autoSearchCommandPort.addProducts(id, productIds);
 
         eventSenderPort.sendRequestReady(id, email);
@@ -54,12 +54,17 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
-            entities.parallelStream().forEach(autoSearch -> processEntity(product.id(), autoSearch));
-
-            if (entities.size() < MAX_PAGE_SIZE) {
-                break;
-            }
+            processValidEntities(product, entities);
+            if (entities.size() < MAX_PAGE_SIZE) break;
         }
+    }
+
+    private void processValidEntities(Product product, List<AutoSearch> entities) {
+        entities.parallelStream()
+                .filter(aS -> ObjectUtils.isNotNull(aS.owner()))
+                .filter(aS -> StringUtils.isNotEmptyAll(product.ownerId(), aS.owner().id()))
+                .filter(aS -> !product.isOwner(aS.owner().id()))
+                .forEach(aS -> processEntity(product.id(), aS));
     }
 
     private void processEntity(String productId, AutoSearch autoSearch) {
