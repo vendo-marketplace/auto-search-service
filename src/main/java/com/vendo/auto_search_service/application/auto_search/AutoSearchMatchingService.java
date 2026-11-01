@@ -12,6 +12,8 @@ import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchMatchingUseCase;
 import com.vendo.auto_search_service.port.search.SearchPort;
 import com.vendo.core_lib.utils.CollectionUtils;
+import com.vendo.core_lib.utils.ObjectUtils;
+import com.vendo.core_lib.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -38,9 +40,9 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
 
         SearchResponseCommand response = searchPort.search(SearchRequestCommand.withFilters(autoSearch).build());
-        if (CollectionUtils.isEmpty(response.data())) return;
+        if (CollectionUtils.isEmpty(response.data()) || ObjectUtils.isNull(autoSearch.owner())) return;
 
-        Set<String> productIds = Product.getProductIds(response.data());
+        Set<String> productIds = Product.getExcludedUserProductIds(autoSearch.owner().id(), response.data());
         autoSearchCommandPort.addProducts(id, productIds);
 
         eventSenderPort.sendRequestReady(id, email);
@@ -48,19 +50,22 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
     @Override
     public void matchNew(Product product) {
-        int page = FIRST_PAGE;
+        int page = FIRST_PAGE, pageSize = matchingProps.getPageSize();
         FindAllRequest request = FindAllRequest.from(product.categoryId(), product.address(), product.price());
-
-        int pageSize = matchingProps.getPageSize();
 
         while (true) {
             List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, pageSize));
-            entities.parallelStream().forEach(autoSearch -> processEntity(product.id(), autoSearch));
-
-            if (entities.size() < pageSize) {
-                break;
-            }
+            processValidEntities(product, entities);
+            if (entities.size() < pageSize) break;
         }
+    }
+
+    private void processValidEntities(Product product, List<AutoSearch> entities) {
+        entities.parallelStream()
+                .filter(aS -> ObjectUtils.isNotNull(aS.owner()))
+                .filter(aS -> StringUtils.isNotEmptyAll(product.ownerId(), aS.owner().id()))
+                .filter(aS -> !product.isOwner(aS.owner().id()))
+                .forEach(aS -> processEntity(product.id(), aS));
     }
 
     private void processEntity(String productId, AutoSearch autoSearch) {

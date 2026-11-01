@@ -29,17 +29,19 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
 
     @Override
     public SearchResponseCommand findAll(String id, ProductPageRequest pageRequest) {
+        int page = getDefaultPage(pageRequest.page()), size = getDefaultSize(pageRequest.size());
+
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
         authUserPort.validateAuthOwner(autoSearch.owner().id());
 
         if (CollectionUtils.isEmpty(autoSearch.products())) {
-            return new SearchResponseCommand(List.of(), SearchMetadata.empty(pageRequest.page(), pageRequest.size()));
+            return new SearchResponseCommand(List.of(), SearchMetadata.empty(page, size));
         }
 
         SearchRequestCommand request = SearchRequestCommand.withFilters(autoSearch)
                 .ids(autoSearch.products())
-                .page(getDefaultPage(pageRequest.page()))
-                .size(getDefaultSize(pageRequest.size()))
+                .page(page)
+                .size(size)
                 .sort(pageRequest.sort())
                 .build();
 
