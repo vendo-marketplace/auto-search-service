@@ -5,13 +5,12 @@ import com.vendo.auto_search_service.application.search.command.SearchRequestCom
 import com.vendo.auto_search_service.application.search.command.SearchResponseCommand;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.product.Product;
-import com.vendo.auto_search_service.adapter.auto_search.in.dto.PriceRangeFilter;
+import com.vendo.auto_search_service.infrastructure.props.MatchingProps;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.auto_search.usecase.AutoSearchMatchingUseCase;
 import com.vendo.auto_search_service.port.search.SearchPort;
-import com.vendo.auto_search_service.shared.Address;
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.core_lib.utils.StringUtils;
@@ -32,13 +31,15 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     private final AutoSearchCommandPort autoSearchCommandPort;
     private final AutoSearchEventSenderPort eventSenderPort;
 
-    private static final int MAX_PAGE_SIZE = 100, FIRST_PAGE = 0;
+    private final MatchingProps matchingProps;
+
+    private static final int FIRST_PAGE = 0;
 
     @Override
     public void matchInit(String id, String email) {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
 
-        SearchResponseCommand response = searchPort.search(buildSearchRequest(autoSearch));
+        SearchResponseCommand response = searchPort.search(SearchRequestCommand.withFilters(autoSearch).build());
         if (CollectionUtils.isEmpty(response.data()) || ObjectUtils.isNull(autoSearch.owner())) return;
 
         Set<String> productIds = Product.getExcludedUserProductIds(autoSearch.owner().id(), response.data());
@@ -49,13 +50,13 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
 
     @Override
     public void matchNew(Product product) {
-        int page = FIRST_PAGE;
+        int page = FIRST_PAGE, pageSize = matchingProps.getPageSize();
         FindAllRequest request = FindAllRequest.from(product.categoryId(), product.address(), product.price());
 
         while (true) {
-            List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, MAX_PAGE_SIZE));
+            List<AutoSearch> entities = autoSearchQueryPort.findAll(request, PageRequest.of(page++, pageSize));
             processValidEntities(product, entities);
-            if (entities.size() < MAX_PAGE_SIZE) break;
+            if (entities.size() < pageSize) break;
         }
     }
 
@@ -70,19 +71,5 @@ public class AutoSearchMatchingService implements AutoSearchMatchingUseCase {
     private void processEntity(String productId, AutoSearch autoSearch) {
         autoSearchCommandPort.addProducts(autoSearch.id(), Set.of(productId));
         eventSenderPort.sendRequestNewProduct(autoSearch.id(), autoSearch.owner().email());
-    }
-
-    private SearchRequestCommand buildSearchRequest(AutoSearch autoSearch) {
-        SearchRequestCommand.SearchRequestCommandBuilder builder = SearchRequestCommand.builder();
-
-        if (ObjectUtils.isAnyNonNull(autoSearch.minPrice(), autoSearch.maxPrice())) {
-            builder.priceRangeFilter(PriceRangeFilter.from(autoSearch.minPrice(), autoSearch.maxPrice()));
-        }
-
-        if (ObjectUtils.isNotNull(autoSearch.address()) && !StringUtils.isEmpty(autoSearch.address().city())) {
-            builder.addressFilter(Address.from(autoSearch.address().city()));
-        }
-
-        return builder.categoryId(autoSearch.categoryId()).build();
     }
 }

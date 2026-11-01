@@ -7,10 +7,12 @@ import com.vendo.auto_search_service.domain.auto_search.AutoSearch;
 import com.vendo.auto_search_service.domain.auto_search.AutoSearchDataBuilder;
 import com.vendo.auto_search_service.domain.auto_search.nested.Owner;
 import com.vendo.auto_search_service.domain.product.Product;
+import com.vendo.auto_search_service.infrastructure.props.MatchingProps;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchCommandPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchEventSenderPort;
 import com.vendo.auto_search_service.port.auto_search.AutoSearchQueryPort;
 import com.vendo.auto_search_service.port.search.SearchPort;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +29,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AutoSearchMatchingServiceTest {
+
+    private static final int PAGE_SIZE = 100;
 
     @InjectMocks
     private AutoSearchMatchingService service;
@@ -38,6 +43,13 @@ public class AutoSearchMatchingServiceTest {
     private AutoSearchCommandPort autoSearchCommandPort;
     @Mock
     private AutoSearchEventSenderPort eventSenderPort;
+    @Mock
+    private MatchingProps matchingProps;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(matchingProps.getPageSize()).thenReturn(PAGE_SIZE);
+    }
 
     @Test
     void match_shouldMatchInitProductsByRequest() {
@@ -45,7 +57,7 @@ public class AutoSearchMatchingServiceTest {
         Product product = ProductDataBuilder.withAllFields().ownerId("another-user-id").build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product)));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(product), null));
         service.matchInit(autoSearch.id(), autoSearch.owner().email());
 
         ArgumentCaptor<SearchRequestCommand> searchCaptor = ArgumentCaptor.forClass(SearchRequestCommand.class);
@@ -71,7 +83,7 @@ public class AutoSearchMatchingServiceTest {
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
 
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(), null));
 
         service.matchInit(autoSearch.id(), autoSearch.owner().email());
 
@@ -106,9 +118,7 @@ public class AutoSearchMatchingServiceTest {
                 .ownerId(null)
                 .build();
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(
-                java.util.Arrays.asList(ownProduct, otherProduct, productWithoutOwner, null)
-        ));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(Arrays.asList(ownProduct, otherProduct, productWithoutOwner, null), null));
 
         service.matchInit(autoSearch.id(), autoSearch.owner().email());
 
@@ -124,7 +134,7 @@ public class AutoSearchMatchingServiceTest {
                 .address(null)
                 .build();
         when(autoSearchQueryPort.findById(autoSearch.id())).thenReturn(autoSearch);
-        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of()));
+        when(searchPort.search(any())).thenReturn(new SearchResponseCommand(List.of(), null));
 
         service.matchInit(autoSearch.id(), autoSearch.owner().email());
 
@@ -171,6 +181,30 @@ public class AutoSearchMatchingServiceTest {
     void matchNew_shouldSkipProductWithoutOwnerId() {
         Product product = ProductDataBuilder.withAllFields().ownerId(null).build();
         AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        verifyNoInteractions(autoSearchCommandPort, eventSenderPort);
+    }
+
+    @Test
+    void matchNew_shouldSkipProductWithBlankOwnerId() {
+        Product product = ProductDataBuilder.withAllFields().ownerId("").build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields().build();
+        when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
+
+        service.matchNew(product);
+
+        verifyNoInteractions(autoSearchCommandPort, eventSenderPort);
+    }
+
+    @Test
+    void matchNew_shouldSkipAutoSearchWithoutOwnerId() {
+        Product product = ProductDataBuilder.withAllFields().ownerId("product-owner-id").build();
+        AutoSearch autoSearch = AutoSearchDataBuilder.withAllFields()
+                .owner(Owner.from(null, "owner@example.com"))
+                .build();
         when(autoSearchQueryPort.findAll(any(), any())).thenReturn(List.of(autoSearch));
 
         service.matchNew(product);

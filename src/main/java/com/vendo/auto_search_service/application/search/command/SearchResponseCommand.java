@@ -4,5 +4,5 @@ import com.vendo.auto_search_service.domain.product.Product;
 
 import java.util.List;
 
-public record SearchResponseCommand(List<Product> data) {
+public record SearchResponseCommand(List<Product> data, SearchMetadata metadata) {
 }
