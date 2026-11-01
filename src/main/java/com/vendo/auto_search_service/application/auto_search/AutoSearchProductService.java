@@ -32,21 +32,26 @@ class AutoSearchProductService implements AutoSearchProductUseCase {
         AutoSearch autoSearch = autoSearchQueryPort.findById(id);
         authUserPort.validateAuthOwner(autoSearch.owner().id());
 
-        int page = ObjectUtils.isNotNull(pageRequest.page()) ? pageRequest.page() : productPageProps.getPage();
-        int size = ObjectUtils.isNotNull(pageRequest.size()) ? pageRequest.size() : productPageProps.getSize();
-
         if (CollectionUtils.isEmpty(autoSearch.products())) {
-            return new SearchResponseCommand(List.of(), SearchMetadata.empty(page, size));
+            return new SearchResponseCommand(List.of(), SearchMetadata.empty(pageRequest.page(), pageRequest.size()));
         }
 
         SearchRequestCommand request = SearchRequestCommand.withFilters(autoSearch)
                 .ids(autoSearch.products())
-                .page(page)
-                .size(size)
+                .page(getDefaultPage(pageRequest.page()))
+                .size(getDefaultSize(pageRequest.size()))
                 .sort(pageRequest.sort())
                 .build();
 
         return searchPort.search(request);
+    }
+
+    private int getDefaultPage(Integer page) {
+        return ObjectUtils.isNotNull(page) ? page : productPageProps.getPage();
+    }
+
+    private int getDefaultSize(Integer size) {
+        return ObjectUtils.isNotNull(size) ? size : productPageProps.getSize();
     }
 
 }

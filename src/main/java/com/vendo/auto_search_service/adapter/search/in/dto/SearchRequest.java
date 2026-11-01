@@ -8,9 +8,11 @@ import java.util.List;
 
 public record SearchRequest(
         String categoryId,
-        Address addressFilter,
         List<String> ids,
+
+        Address addressFilter,
         PriceRangeFilter priceRangeFilter,
+
         Integer page,
         Integer size,
         SortCommand sort

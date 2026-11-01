@@ -12,9 +12,11 @@ import java.util.Set;
 @Builder
 public record SearchRequestCommand(
         String categoryId,
-        Address addressFilter,
         Set<String> ids,
+
+        Address addressFilter,
         PriceRangeFilter priceRangeFilter,
+
         Integer page,
         Integer size,
         SortCommand sort
